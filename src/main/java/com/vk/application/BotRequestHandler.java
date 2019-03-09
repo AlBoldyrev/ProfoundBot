@@ -11,8 +11,10 @@ import com.vk.api.sdk.exceptions.LongPollServerKeyExpiredException;
 import com.vk.api.sdk.objects.groups.responses.GetLongPollServerResponse;
 import com.vk.repository.MessageRepository;
 import com.vk.repository.UserRepository;
+import com.vk.strategy.realizations.MessageAllow;
 import com.vk.strategy.realizations.MessageNew;
 import com.vk.strategy.realizations.MessageReply;
+import com.vk.strategy.realizations.MessageTypingState;
 import com.vk.strategy.realizations.WallPostNew;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +39,12 @@ public class BotRequestHandler {
 
     @Autowired
     WallPostNew wallPostNew;
+
+    @Autowired
+    MessageAllow messageAllow;
+
+    @Autowired
+    MessageTypingState messageTypingState;
 
     @Autowired
     UserRepository userRepository;
@@ -69,6 +77,8 @@ public class BotRequestHandler {
         strategyHandlers.put("message_new", messageNew);
         strategyHandlers.put("message_reply", messageReply);
         strategyHandlers.put("wall_post_new", wallPostNew);
+        strategyHandlers.put("message_allow", messageAllow);
+        strategyHandlers.put("message_typing_state", messageTypingState);
 
         GetLongPollServerResponse longPollServer = getLongPollServer();
         int lastTimeStamp = longPollServer.getTs();

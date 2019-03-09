@@ -1,10 +1,14 @@
 package com.vk.application;
 
+import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
+import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
+import com.vk.strategy.realizations.MessageAllow;
 import com.vk.strategy.realizations.MessageNew;
 import com.vk.strategy.realizations.MessageReply;
+import com.vk.strategy.realizations.MessageTypingState;
 import com.vk.strategy.realizations.WallPostNew;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +39,11 @@ public class Config {
     }
 
     @Bean
+    public UserActor userActor(Properties properties) {
+        return createUserActor(properties);
+    }
+
+    @Bean
     public Properties properties() throws IOException {
         return readProperties();
     }
@@ -54,12 +63,30 @@ public class Config {
         return new WallPostNew();
     }
 
+    @Bean
+    MessageAllow messageAllow() {
+        return new MessageAllow();
+    }
+
+    @Bean
+    MessageTypingState messageTypingState() {
+        return new MessageTypingState();
+    }
+
+
+
 
 
     private static GroupActor createGroupActor(Properties properties) {
         String groupId = properties.getProperty("groupId");
         String accessToken = properties.getProperty("token");
         return new GroupActor(Integer.parseInt(groupId), accessToken);
+    }
+
+    private static UserActor createUserActor (Properties properties) {
+        String userId = properties.getProperty("userId");
+        String accessToken = properties.getProperty("userToken");
+        return new UserActor(Integer.parseInt(userId), accessToken);
     }
 
     private static Properties readProperties() throws IOException {
