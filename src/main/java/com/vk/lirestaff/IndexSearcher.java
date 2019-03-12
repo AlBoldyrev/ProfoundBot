@@ -42,8 +42,8 @@ public class IndexSearcher {
         }
 
         if (!passed) {
-            System.out.println("        No image given as first argument. nameThread:"+Thread.currentThread().getName());
-            System.out.println("        Run \"Searcher <query image>\" to search for <query image>.nameThread:"+Thread.currentThread().getName());
+            System.out.println("        No image given as first argument. nameThread:" + Thread.currentThread().getName());
+            System.out.println("        Run \"Searcher <query image>\" to search for <query image>.nameThread:" + Thread.currentThread().getName());
 //            System.exit(1);
         }else{
             System.out.println("        img is good! nameThread: "+ Thread.currentThread().getName());
