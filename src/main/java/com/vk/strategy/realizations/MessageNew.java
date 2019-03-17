@@ -26,7 +26,10 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,7 +100,14 @@ public class MessageNew implements IResponseHandler {
             System.out.println("Is folder created? --> " + isFolderCreated);
         }
 
+        try(InputStream in = new URL(URL).openStream()){
+            Files.copy(in, Paths.get(Constants.userPhotoFolderPath + userId + "\\" + userId + "&1.png"));
+        }
+
+
         File[] files = new File(Constants.userPhotoFolderPath + userId).listFiles();
+
+
         for (File file : files) {
             if (file.isFile()) {
                 boolean isFileDeleted = file.delete();
