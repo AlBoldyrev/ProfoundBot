@@ -83,6 +83,7 @@ public class MessageNew implements IResponseHandler {
 
             listOfIdFromSearch(url, from_id);
 
+            Indexer indexer = new Indexer(Constants.photoFolderPath, Constants.reIndexPath);
         }
 
     }
