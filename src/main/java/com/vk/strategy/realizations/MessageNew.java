@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.internal.LinkedTreeMap;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.client.actors.UserActor;
@@ -14,6 +15,9 @@ import com.vk.constants.Constants;
 import com.vk.jsonphotoparser.PhotoParser;
 import com.vk.lirestaff.IndexSearcher;
 import com.vk.lirestaff.Indexer;
+import com.vk.model.message_new.Attachment;
+import com.vk.model.message_new.Info;
+import com.vk.model.message_new.ModelMessageNew;
 import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,6 +29,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import java.lang.reflect.Type;
+import java.util.Map;
+
+import com.google.gson.reflect.TypeToken;
 
 
 @Component
@@ -44,12 +53,38 @@ public class MessageNew implements IResponseHandler {
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
         PhotoParser photoParser = gson.fromJson(objectFromString, PhotoParser.class);
+        ModelMessageNew message = gson.fromJson(jsonObject, ModelMessageNew.class);
 
 
-        Indexer indexer = new Indexer(Constants.photoFolderPath, Constants.reIndexPath);
+        Type type = new TypeToken<Map<String, Object>>(){}.getType();
+        Map<String, Object> myMap = gson.fromJson(jsonObject, type);
+        LinkedTreeMap<String, Object> object;
+        object = (LinkedTreeMap<String,Object>)myMap.get("object");
+
+        ArrayList<LinkedTreeMap<String,Object>> attachments = (ArrayList<LinkedTreeMap<String,Object>>) object.get("attachments");
+
+        for (LinkedTreeMap<String,Object> treemaps : attachments) {
+            String messageType = (String) treemaps.get("type");
+            LinkedTreeMap<String, Object> messageTypeValue;
+            messageTypeValue = (LinkedTreeMap<String, Object>) treemaps.get("photo");
+
+            ArrayList<LinkedTreeMap<String,Object>> sizes;
+            sizes = (ArrayList<LinkedTreeMap<String,Object>>) messageTypeValue.get("sizes");
+            LinkedTreeMap<String, Object> stringObjectLinkedTreeMap = sizes.get(9);
+            String url = (String) stringObjectLinkedTreeMap.get("url");
+
+            System.out.println("url = " + url);
+            System.out.println("messageType " + messageType);
+            int from_id = message.getInfo().getFrom_id();
+            System.out.println(" FROM_ID " + from_id);
+
+            listOfIdFromSearch(url, from_id);
+
+        }
+
     }
 
-    private ArrayList<String> listOfIdFromSearch(String URL, String userId) throws IOException {
+    private ArrayList<String> listOfIdFromSearch(String URL, int userId) throws IOException {
 
         IndexSearcher indexSearcher = null;
         File userFile = null;
@@ -91,7 +126,7 @@ public class MessageNew implements IResponseHandler {
                 return new ArrayList<>();
             }
         }
-
+        System.out.println( " STRANGE METHOD IS ENDED......");
         if (null != indexSearcher) {
             System.out.println("IndexSearcher is not null :) ");
             return new ArrayList<>(indexSearcher.getIdList());
