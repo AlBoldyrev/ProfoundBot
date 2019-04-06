@@ -49,7 +49,7 @@ public class MessageNew implements IResponseHandler {
     private final Random random = new Random();
 
     public void handle(JsonObject jsonObject, VkApiClient apiClient, GroupActor groupActor) throws Exception {
-        
+
         List<String> idList = new ArrayList<>();
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
@@ -84,7 +84,7 @@ public class MessageNew implements IResponseHandler {
                 photoName = photoName.substring(0, photoName.length() - 5);
                 photoNames.add(photoName);
             }
-            apiClient.messages().send(groupActor).message("Свежая подборочка!").userId(662638).randomId(random.nextInt()).attachment(photoNames).execute();
+            apiClient.messages().send(groupActor).message("Свежая подборочка!").userId(662638).randomId(random.nextInt()).attachment("audio2000313711_456242671").execute();
         }
     }
 
