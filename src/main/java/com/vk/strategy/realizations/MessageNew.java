@@ -45,15 +45,16 @@ public class MessageNew implements IResponseHandler {
     @Autowired
     UserActor userActor;
 
+    private static final int NUMBER_OF_PHOTOS = 10;
     private final Random random = new Random();
 
     public void handle(JsonObject jsonObject, VkApiClient apiClient, GroupActor groupActor) throws Exception {
-
+        
         List<String> idList = new ArrayList<>();
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
         ModelMessageNew message = gson.fromJson(jsonObject, ModelMessageNew.class);
-
+        int senderUserId;
 
         Type type = new TypeToken<Map<String, Object>>(){}.getType();
         Map<String, Object> myMap = gson.fromJson(jsonObject, type);
@@ -63,53 +64,36 @@ public class MessageNew implements IResponseHandler {
         ArrayList<LinkedTreeMap<String,Object>> attachments = (ArrayList<LinkedTreeMap<String,Object>>) object.get("attachments");
 
         for (LinkedTreeMap<String,Object> treemaps : attachments) {
-            String messageType = (String) treemaps.get("type");
             LinkedTreeMap<String, Object> messageTypeValue;
             messageTypeValue = (LinkedTreeMap<String, Object>) treemaps.get("photo");
 
             ArrayList<LinkedTreeMap<String,Object>> sizes;
             sizes = (ArrayList<LinkedTreeMap<String,Object>>) messageTypeValue.get("sizes");
-            LinkedTreeMap<String, Object> stringObjectLinkedTreeMap = sizes.get(9);
+            LinkedTreeMap<String, Object> stringObjectLinkedTreeMap = sizes.get(sizes.size() - 1);
             String url = (String) stringObjectLinkedTreeMap.get("url");
 
-            int from_id = message.getInfo().getFrom_id();
+            senderUserId = message.getInfo().getFrom_id();
 
-            idList = listOfIdFromSearch(url, from_id);
+            idList = listOfIdFromSearch(url, senderUserId);
 
         }
         List<String> photoNames = new ArrayList<>();
-        for (int i = 1; i < 10; i++) {
-            String photoName = idList.get(i);
-            photoName = photoName.substring(0, photoName.length() - 5);
-            photoNames.add(photoName);
+        if (!attachments.isEmpty()) {
+            for (int i = 1; i < NUMBER_OF_PHOTOS; i++) {
+                String photoName = idList.get(i);
+                photoName = photoName.substring(0, photoName.length() - 5);
+                photoNames.add(photoName);
+            }
+            apiClient.messages().send(groupActor).message("Свежая подборочка!").userId(662638).randomId(random.nextInt()).attachment(photoNames).execute();
         }
-        List<String> test = new ArrayList<>();
-        apiClient.messages().send(groupActor).message("s").userId(662638).randomId(random.nextInt()).attachment(test).execute();
-
-       /* String s = apiClient.photos().getMessagesUploadServer(groupActor).executeAsString();
-        JsonParser jsonParser = new JsonParser();
-        JsonObject json = jsonParser.parse(s).getAsJsonObject();
-        JsonElement photo = json.get("photo");
-        JsonElement server = json.get("server");
-        JsonElement hash = json.get("hash");
-
-        apiClient.photos().saveMessagesPhoto(groupActor);*/
-
-
     }
 
     private ArrayList<String> listOfIdFromSearch(String URL, int userId) throws IOException {
 
         IndexSearcher indexSearcher = null;
-        File userFile = null;
+        File userFile;
         BufferedImage img;
-        String fileName = null;
-
-        File folder = new File(Constants.userPhotoFolderPath + userId);
-        if (!folder.exists()) {
-            boolean isFolderCreated = folder.mkdir();
-            System.out.println("Is folder created? --> " + isFolderCreated);
-        }
+        String fileName;
 
         try(InputStream in = new URL(URL).openStream()){
             try {
@@ -119,47 +103,24 @@ public class MessageNew implements IResponseHandler {
             }
         }
 
+        fileName = Constants.userPhotoFolderPath + userId + "\\" + userId + "&1.png";
+        img = ImageIO.read(new URL(URL));
+        userFile = new File(fileName);
 
-        File[] files = new File(Constants.userPhotoFolderPath + userId).listFiles();
-
-
-        for (File file : files) {
-            if (file.isFile()) {
-                boolean isFileDeleted = file.delete();
-                System.out.println("Is file deleted? --> " + isFileDeleted);
-            }
-            fileName = Constants.userPhotoFolderPath + userId + "\\" + userId + "&1.png";
-            img = ImageIO.read(new URL(URL));
-            userFile = new File(fileName);
-
-            if (!userFile.exists()) {
-                boolean isFileCreated = userFile.createNewFile();
-                System.out.println("Is file created? --> " + isFileCreated);
-            }
-
-            if (img != null) {
-                ImageIO.write(img, "png", userFile);
-            } else {
-                System.out.println("Image is null ! ! !");
-                return new ArrayList<>();
-            }
-
-            if (userFile.exists()) {
-                indexSearcher = new IndexSearcher(fileName);
-            } else {
-                System.out.println("UserFile is now exists ! ! !");
-                return new ArrayList<>();
-            }
-        }
-        System.out.println( " STRANGE METHOD IS ENDED......");
-        if (null != indexSearcher) {
-            System.out.println("IndexSearcher is not null :) ");
-            return new ArrayList<>(indexSearcher.getIdList());
+        if (img != null) {
+            ImageIO.write(img, "png", userFile);
         } else {
-            System.out.println("IndexSearcher is null :( ");
             return new ArrayList<>();
         }
 
+        if (userFile.exists()) {
+            indexSearcher = new IndexSearcher(fileName);
+        } else {
+            return new ArrayList<>();
+        }
+
+        return new ArrayList<>(indexSearcher.getIdList());
     }
+
 }
 

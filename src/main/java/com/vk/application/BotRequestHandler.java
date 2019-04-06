@@ -90,7 +90,11 @@ public class BotRequestHandler {
                 System.out.println("jsonType: " + type + "  " + jsonObject);
 
                 IResponseHandler responseHandler = strategyHandlers.get(type);
-                responseHandler.handle(jsonObject, apiClient, groupActor);
+                try {
+                    responseHandler.handle(jsonObject, apiClient, groupActor);
+                } catch (NullPointerException npe) {
+                    System.out.println("This request can not be handled right now.");
+                }
 
             }
             lastTimeStamp = eventsResponse.getTs();

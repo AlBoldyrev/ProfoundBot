@@ -28,24 +28,21 @@ public class Indexer {
 
         if (imgFolderPath.length() > 0) {
             File f = new File(imgFolderPath);
-            System.out.println("Indexing images in " + imgFolderPath);
             if (f.exists() && f.isDirectory()) {
                 passed = true;
             }
         }
+
         if (!passed) {
-            System.out.println("No directory given as first argument.");
-            System.out.println("Run \"Indexer <directory>\" to index files of a directory.");
+
             System.exit(1);
         }
-
         ArrayList<String> images = FileUtils.getAllImages(new File(imgFolderPath), true);
         GlobalDocumentBuilder globalDocumentBuilder = new GlobalDocumentBuilder(CEDD.class);
         IndexWriter iw = LuceneUtils.createIndexWriter(pathForIndex, true, LuceneUtils.AnalyzerType.WhitespaceAnalyzer);
 
         for (Iterator<String> it = images.iterator(); it.hasNext(); ) {
             String imageFilePath = it.next();
-            System.out.println("Indexing " + imageFilePath);
             try {
                 BufferedImage img = ImageIO.read(new FileInputStream(imageFilePath));
                 Document document = globalDocumentBuilder.createDocument(img, imageFilePath);
@@ -56,7 +53,6 @@ public class Indexer {
             }
         }
         LuceneUtils.closeWriter(iw);
-        System.out.println("Finished indexing.");
     }
 
 
