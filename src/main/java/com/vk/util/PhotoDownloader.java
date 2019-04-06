@@ -29,26 +29,29 @@ public class PhotoDownloader {
 
     public void downloadPhotosFromAlbum(VkApiClient apiClient, String albumId, int groupId) throws ClientException, IOException {
 
-        PhotoParser photoParserObjectForDetectionTotalPhotoCount = getPhotoParserObject(apiClient, albumId, groupId, 1);
+        PhotoParser photoParserObjectForDetectionTotalPhotoCount = getPhotoParserObject(apiClient, albumId, groupId, 1, 1);
         int numberOfThousands = photoParserObjectForDetectionTotalPhotoCount.getResponse().getCount()/1000;
-
+        int counter = 1;
         for (int i = 1; i < numberOfThousands; i++) {
 
-            PhotoParser photoParserObject = getPhotoParserObject(apiClient, albumId, groupId, 1000);
+            PhotoParser photoParserObject = getPhotoParserObject(apiClient, albumId, groupId, 1000, i*1000);
 
 
             List<Item> items = photoParserObject.getResponse().getItems();
             for (Item item : items) {
-                String photoName = "photo" + item.getOwner_id() + "_" + item.getId();
+                StringBuilder sb = new StringBuilder();
+                sb.append("photo").append(item.getOwner_id()).append("_").append(item.getId());
 
                 String photo_604 = item.getPhoto_604();
                 System.out.println(photo_604);
 
                 try (InputStream in = new URL(photo_604).openStream()) {
                     try {
-                        Files.copy(in, Paths.get(Constants.photoFolderPath + "\\" + photoName + ".jpg"));
+                        Files.copy(in, Paths.get(Constants.photoFolderPath + "\\" + sb + ".jpg"));
+                        System.out.println(sb + " is written");
                     } catch (FileAlreadyExistsException faee) {
-                        System.out.println("go next!");
+
+                        System.out.println(sb + " is skipped" + " counter: " + counter++);
                     }
                 }
 
@@ -56,9 +59,9 @@ public class PhotoDownloader {
         }
     }
 
-    private PhotoParser getPhotoParserObject(VkApiClient apiClient, String albumId, int groupId, int photoCount) throws ClientException {
+    private PhotoParser getPhotoParserObject(VkApiClient apiClient, String albumId, int groupId, int photoCount, int offset) throws ClientException {
 
-        String responseWithPhotoUrls = apiClient.photos().get(userActor).albumId(albumId).count(photoCount).ownerId(groupId).executeAsString();
+        String responseWithPhotoUrls = apiClient.photos().get(userActor).albumId(albumId).count(photoCount).offset(offset).ownerId(groupId).executeAsString();
 
         JsonParser jsonParser = new JsonParser();
         JsonObject json = jsonParser.parse(responseWithPhotoUrls).getAsJsonObject();

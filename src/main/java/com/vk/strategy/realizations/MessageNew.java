@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ public class MessageNew implements IResponseHandler {
 
     public void handle(JsonObject jsonObject, VkApiClient apiClient, GroupActor groupActor) throws Exception {
 
-        List<String> w = new ArrayList<>();
+        List<String> idList = new ArrayList<>();
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
         ModelMessageNew message = gson.fromJson(jsonObject, ModelMessageNew.class);
@@ -71,16 +72,19 @@ public class MessageNew implements IResponseHandler {
             LinkedTreeMap<String, Object> stringObjectLinkedTreeMap = sizes.get(9);
             String url = (String) stringObjectLinkedTreeMap.get("url");
 
-            System.out.println("url = " + url);
-            System.out.println("messageType " + messageType);
             int from_id = message.getInfo().getFrom_id();
-            System.out.println(" FROM_ID " + from_id);
 
-            w = listOfIdFromSearch(url, from_id);
+            idList = listOfIdFromSearch(url, from_id);
 
-            System.out.println("fff");
         }
-        apiClient.messages().send(groupActor).message("s").userId(662638).randomId(random.nextInt()).attachment("photo-170362981_456239163").execute();
+        List<String> photoNames = new ArrayList<>();
+        for (int i = 1; i < 10; i++) {
+            String photoName = idList.get(i);
+            photoName = photoName.substring(0, photoName.length() - 5);
+            photoNames.add(photoName);
+        }
+        List<String> test = new ArrayList<>();
+        apiClient.messages().send(groupActor).message("s").userId(662638).randomId(random.nextInt()).attachment(test).execute();
 
        /* String s = apiClient.photos().getMessagesUploadServer(groupActor).executeAsString();
         JsonParser jsonParser = new JsonParser();
@@ -108,7 +112,11 @@ public class MessageNew implements IResponseHandler {
         }
 
         try(InputStream in = new URL(URL).openStream()){
-            Files.copy(in, Paths.get(Constants.userPhotoFolderPath + userId + "\\" + userId + "&1.png"));
+            try {
+                Files.copy(in, Paths.get(Constants.userPhotoFolderPath + userId + "\\" + userId + "&1.png"));
+            } catch (FileAlreadyExistsException faee) {
+                System.out.println("Photo is already exists");
+            }
         }
 
 
