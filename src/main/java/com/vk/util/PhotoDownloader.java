@@ -1,4 +1,4 @@
-package com.vk.Util;
+package com.vk.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -11,14 +11,17 @@ import com.vk.constants.Constants;
 import com.vk.jsonphotoparser.Item;
 import com.vk.jsonphotoparser.PhotoParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+@Component
 public class PhotoDownloader {
 
     @Autowired
@@ -28,20 +31,25 @@ public class PhotoDownloader {
 
         PhotoParser photoParserObjectForDetectionTotalPhotoCount = getPhotoParserObject(apiClient, albumId, groupId, 1);
         int numberOfThousands = photoParserObjectForDetectionTotalPhotoCount.getResponse().getCount()/1000;
-        int counter = 1;
 
         for (int i = 1; i < numberOfThousands; i++) {
 
-            PhotoParser photoParserObject = getPhotoParserObject(apiClient, albumId, groupId, 999);
+            PhotoParser photoParserObject = getPhotoParserObject(apiClient, albumId, groupId, 1000);
+
 
             List<Item> items = photoParserObject.getResponse().getItems();
             for (Item item : items) {
+                String photoName = "photo" + item.getOwner_id() + "_" + item.getId();
 
                 String photo_604 = item.getPhoto_604();
                 System.out.println(photo_604);
 
                 try (InputStream in = new URL(photo_604).openStream()) {
-                    Files.copy(in, Paths.get(Constants.photoFolderPath + "\\" + counter++ + ".jpg"));
+                    try {
+                        Files.copy(in, Paths.get(Constants.photoFolderPath + "\\" + photoName + ".jpg"));
+                    } catch (FileAlreadyExistsException faee) {
+                        System.out.println("go next!");
+                    }
                 }
 
             }

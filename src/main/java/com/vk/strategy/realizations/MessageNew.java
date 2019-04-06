@@ -1,10 +1,7 @@
 
 package com.vk.strategy.realizations;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.google.gson.internal.LinkedTreeMap;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
@@ -23,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
+import javax.sound.midi.Soundbank;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +33,7 @@ import java.util.List;
 
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Random;
 
 import com.google.gson.reflect.TypeToken;
 
@@ -45,17 +44,13 @@ public class MessageNew implements IResponseHandler {
     @Autowired
     UserActor userActor;
 
+    private final Random random = new Random();
+
     public void handle(JsonObject jsonObject, VkApiClient apiClient, GroupActor groupActor) throws Exception {
 
-        PhotosGetAllQuery photosGetAllQuery = apiClient.photos().getAll(userActor).ownerId(-170362981);
-
-        String s = apiClient.photos().getAll(userActor).ownerId(-170362981).executeAsString();
-        JsonParser jsonParser = new JsonParser();
-        JsonObject objectFromString = jsonParser.parse(s).getAsJsonObject();
-
+        List<String> w = new ArrayList<>();
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
-        PhotoParser photoParser = gson.fromJson(objectFromString, PhotoParser.class);
         ModelMessageNew message = gson.fromJson(jsonObject, ModelMessageNew.class);
 
 
@@ -81,10 +76,21 @@ public class MessageNew implements IResponseHandler {
             int from_id = message.getInfo().getFrom_id();
             System.out.println(" FROM_ID " + from_id);
 
-            listOfIdFromSearch(url, from_id);
+            w = listOfIdFromSearch(url, from_id);
 
-            Indexer indexer = new Indexer(Constants.photoFolderPath, Constants.reIndexPath);
+            System.out.println("fff");
         }
+        apiClient.messages().send(groupActor).message("s").userId(662638).randomId(random.nextInt()).attachment("photo-170362981_456239163").execute();
+
+       /* String s = apiClient.photos().getMessagesUploadServer(groupActor).executeAsString();
+        JsonParser jsonParser = new JsonParser();
+        JsonObject json = jsonParser.parse(s).getAsJsonObject();
+        JsonElement photo = json.get("photo");
+        JsonElement server = json.get("server");
+        JsonElement hash = json.get("hash");
+
+        apiClient.photos().saveMessagesPhoto(groupActor);*/
+
 
     }
 

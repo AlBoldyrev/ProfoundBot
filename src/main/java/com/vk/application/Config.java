@@ -10,6 +10,7 @@ import com.vk.strategy.realizations.MessageNew;
 import com.vk.strategy.realizations.MessageReply;
 import com.vk.strategy.realizations.MessageTypingState;
 import com.vk.strategy.realizations.WallPostNew;
+import com.vk.util.PhotoDownloader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -72,6 +73,9 @@ public class Config {
     MessageTypingState messageTypingState() {
         return new MessageTypingState();
     }
+
+    @Bean
+    PhotoDownloader photoDownloader() { return new PhotoDownloader();}
 
 
 
