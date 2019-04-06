@@ -16,7 +16,9 @@ import com.vk.jsonphotoparser.PhotoParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -26,32 +28,8 @@ import java.util.List;
 @Component
 public class WallPostNew  implements IResponseHandler  {
 
-    @Autowired
-    UserActor userActor;
-
     public void handle(JsonObject jsonObject, VkApiClient apiClient, GroupActor groupActor) throws Exception {
 
-        PhotosGetAllQuery photosGetAllQuery = apiClient.photos().getAll(userActor).ownerId(-170362981);
-        String s = apiClient.photos().getAll(userActor).ownerId(-170362981).executeAsString();
-        JsonParser jsonParser = new JsonParser();
-        JsonObject objectFromString = jsonParser.parse(s).getAsJsonObject();
-
-        GsonBuilder builder = new GsonBuilder();
-        Gson gson = builder.create();
-        PhotoParser photoParser = gson.fromJson(objectFromString, PhotoParser.class);
-        List<Item> items = photoParser.getResponse().getItems();
-        int counter = 1;
-        for (Item item: items) {
-
-            String photo_604 = item.getPhoto_604();
-            System.out.println(photo_604);
-
-            try(InputStream in = new URL(photo_604).openStream()){
-                String substring = photo_604.substring(8);
-                Files.copy(in, Paths.get(Constants.photoFolderPath + "\\" + counter++ + ".jpg"));
-            }
-
-        }
     }
 
 }
