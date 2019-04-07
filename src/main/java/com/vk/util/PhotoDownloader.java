@@ -32,7 +32,7 @@ public class PhotoDownloader {
         PhotoParser photoParserObjectForDetectionTotalPhotoCount = getPhotoParserObject(apiClient, albumId, groupId, 1, 1);
         int numberOfThousands = photoParserObjectForDetectionTotalPhotoCount.getResponse().getCount()/1000;
         int counter = 1;
-        for (int i = 1; i < numberOfThousands; i++) {
+        for (int i = 0; i < numberOfThousands + 1; i++) {
 
             PhotoParser photoParserObject = getPhotoParserObject(apiClient, albumId, groupId, 1000, i*1000);
 
@@ -50,7 +50,6 @@ public class PhotoDownloader {
                         Files.copy(in, Paths.get(Constants.photoFolderPath + "\\" + sb + ".jpg"));
                         System.out.println(sb + " is written");
                     } catch (FileAlreadyExistsException faee) {
-
                         System.out.println(sb + " is skipped" + " counter: " + counter++);
                     }
                 }
@@ -69,7 +68,6 @@ public class PhotoDownloader {
         GsonBuilder gsonBuilder = new GsonBuilder();
         Gson gson = gsonBuilder.create();
 
-        PhotoParser photoParser = gson.fromJson(json, PhotoParser.class);
-        return photoParser;
+        return gson.fromJson(json, PhotoParser.class);
     }
 }

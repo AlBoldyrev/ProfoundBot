@@ -9,13 +9,7 @@ import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.exceptions.LongPollServerKeyExpiredException;
 import com.vk.api.sdk.objects.groups.responses.GetLongPollServerResponse;
-import com.vk.repository.MessageRepository;
-import com.vk.repository.UserRepository;
-import com.vk.strategy.realizations.MessageAllow;
-import com.vk.strategy.realizations.MessageNew;
-import com.vk.strategy.realizations.MessageReply;
-import com.vk.strategy.realizations.MessageTypingState;
-import com.vk.strategy.realizations.WallPostNew;
+import com.vk.strategy.realizations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-
-
 @Component
 public class BotRequestHandler {
-
 
     @Autowired
     MessageNew messageNew;
@@ -45,13 +36,6 @@ public class BotRequestHandler {
 
     @Autowired
     MessageTypingState messageTypingState;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    MessageRepository messageRepository;
-
 
     private static final Logger LOG = LoggerFactory.getLogger(BotRequestHandler.class);
     private static final int DEFAULT_WAIT = 10;
@@ -91,7 +75,7 @@ public class BotRequestHandler {
 
                 IResponseHandler responseHandler = strategyHandlers.get(type);
                 try {
-                    responseHandler.handle(jsonObject, apiClient, groupActor);
+                    responseHandler.handle(jsonObject, groupActor);
                 } catch (NullPointerException npe) {
                     System.out.println("This request can not be handled right now.");
                 }
