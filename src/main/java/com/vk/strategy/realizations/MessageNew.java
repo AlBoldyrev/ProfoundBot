@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import static com.vk.constants.Constants.NUMBER_OF_PHOTOS_IN_THE_MESSAGE;
+
 
 @Component
 public class MessageNew implements IResponseHandler {
@@ -44,8 +46,7 @@ public class MessageNew implements IResponseHandler {
 
     @Autowired
     VkApiClient apiClient;
-
-    private static final int NUMBER_OF_PHOTOS = 10;
+    
     private final Random random = new Random();
 
     public void handle(JsonObject jsonObject, GroupActor groupActor) throws Exception {
@@ -126,7 +127,7 @@ public class MessageNew implements IResponseHandler {
 
         List<String> audioNames = new ArrayList<>();
 
-        String s = apiClient.wall().get(userActor).ownerId(-170362981).executeAsString();
+        String s = apiClient.wall().get(userActor).ownerId(Constants.PUBLIC_ID_WITH_AUDIO_ON_THE_WALL).executeAsString();
         AudioParser audioParser = gson.fromJson(s, AudioParser.class);
 
         List<Item> items = audioParser.getResponse().getItems();
@@ -144,6 +145,7 @@ public class MessageNew implements IResponseHandler {
     }
 
     private List<String> getPhotoNames(JsonObject jsonObject) throws IOException {
+
         List<String> idList = new ArrayList<>();
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
@@ -152,17 +154,15 @@ public class MessageNew implements IResponseHandler {
 
         Type type = new TypeToken<Map<String, Object>>(){}.getType();
         Map<String, Object> myMap = gson.fromJson(jsonObject, type);
-        LinkedTreeMap<String, Object> object;
-        object = (LinkedTreeMap<String,Object>)myMap.get("object");
-
+        LinkedTreeMap<String, Object> object = (LinkedTreeMap<String,Object>)myMap.get("object");
         ArrayList<LinkedTreeMap<String,Object>> attachments = (ArrayList<LinkedTreeMap<String,Object>>) object.get("attachments");
 
-        for (LinkedTreeMap<String,Object> treemaps : attachments) {
-            LinkedTreeMap<String, Object> messageTypeValue;
-            messageTypeValue = (LinkedTreeMap<String, Object>) treemaps.get("photo");
+        for (LinkedTreeMap<String,Object> treeMaps : attachments) {
 
-            ArrayList<LinkedTreeMap<String,Object>> sizes;
-            sizes = (ArrayList<LinkedTreeMap<String,Object>>) messageTypeValue.get("sizes");
+            LinkedTreeMap<String, Object> messageTypeValue;
+            messageTypeValue = (LinkedTreeMap<String, Object>) treeMaps.get("photo");
+
+            ArrayList<LinkedTreeMap<String,Object>> sizes = (ArrayList<LinkedTreeMap<String,Object>>) messageTypeValue.get("sizes");
             LinkedTreeMap<String, Object> stringObjectLinkedTreeMap = sizes.get(sizes.size() - 1);
             String url = (String) stringObjectLinkedTreeMap.get("url");
 
@@ -171,9 +171,10 @@ public class MessageNew implements IResponseHandler {
             idList = listOfIdFromSearch(url, senderUserId);
 
         }
+
         List<String> photoNames = new ArrayList<>();
         if (isAttachmentExists(jsonObject)) {
-            for (int i = 1; i < NUMBER_OF_PHOTOS; i++) {
+            for (int i = 1; i < NUMBER_OF_PHOTOS_IN_THE_MESSAGE + 1; i++) {
                 String photoName = idList.get(i);
                 photoName = photoName.substring(0, photoName.length() - 4);
                 photoNames.add(photoName);

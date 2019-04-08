@@ -27,30 +27,31 @@ public class PhotoDownloader {
     @Autowired
     UserActor userActor;
 
+    private final static int MAX_AVAILABLE_PHOTOS_COUNT = 1000;
+
     public void downloadPhotosFromAlbum(VkApiClient apiClient, String albumId, int groupId) throws ClientException, IOException {
 
         PhotoParser photoParserObjectForDetectionTotalPhotoCount = getPhotoParserObject(apiClient, albumId, groupId, 1, 1);
+
         int numberOfThousands = photoParserObjectForDetectionTotalPhotoCount.getResponse().getCount()/1000;
-        int counter = 1;
+        int counterOfSkippedPhotos = 1;
+
         for (int i = 0; i < numberOfThousands + 1; i++) {
 
-            PhotoParser photoParserObject = getPhotoParserObject(apiClient, albumId, groupId, 1000, i*1000);
-
+            PhotoParser photoParserObject = getPhotoParserObject(apiClient, albumId, groupId, MAX_AVAILABLE_PHOTOS_COUNT, i * MAX_AVAILABLE_PHOTOS_COUNT);
 
             List<Item> items = photoParserObject.getResponse().getItems();
             for (Item item : items) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("photo").append(item.getOwner_id()).append("_").append(item.getId());
-
                 String photo_604 = item.getPhoto_604();
-                System.out.println(photo_604);
 
                 try (InputStream in = new URL(photo_604).openStream()) {
                     try {
                         Files.copy(in, Paths.get(Constants.photoFolderPath + "\\" + sb + ".jpg"));
                         System.out.println(sb + " is written");
                     } catch (FileAlreadyExistsException faee) {
-                        System.out.println(sb + " is skipped" + " counter: " + counter++);
+                        System.out.println(sb + " is skipped" + " counterOfSkippedPhotos: " + counterOfSkippedPhotos++);
                     }
                 }
 
