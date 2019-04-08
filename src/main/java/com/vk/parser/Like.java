@@ -1,11 +1,11 @@
-package com.vk.jsonaudioparser;
+package com.vk.parser;
 
 public class Like {
 
-    int count;
-    int user_likes;
-    int can_like;
-    int can_publish;
+    private int count;
+    private int user_likes;
+    private int can_like;
+    private int can_publish;
 
     public int getCount() {
         return count;

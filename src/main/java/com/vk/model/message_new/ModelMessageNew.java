@@ -6,6 +6,7 @@ public class ModelMessageNew {
 
     String type;
 
+    //TODO rename this shit
     @SerializedName("object")
     Info info;
 

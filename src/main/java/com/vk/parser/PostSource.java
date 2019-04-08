@@ -1,8 +1,8 @@
-package com.vk.jsonaudioparser;
+package com.vk.parser;
 
 public class PostSource {
 
-    String type;
+    private String type;
 
     public String getType() {
         return type;

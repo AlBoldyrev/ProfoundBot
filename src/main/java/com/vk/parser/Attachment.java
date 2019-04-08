@@ -1,9 +1,10 @@
-package com.vk.jsonaudioparser;
+package com.vk.parser;
 
 public class Attachment {
 
-    String type;
-    Audio audio;
+    private String type;
+    private Audio audio;
+    private Photo photo;
 
     public String getType() {
         return type;
@@ -21,5 +22,11 @@ public class Attachment {
         this.audio = audio;
     }
 
+    public Photo getPhoto() {
+        return photo;
+    }
 
+    public void setPhoto(Photo photo) {
+        this.photo = photo;
+    }
 }

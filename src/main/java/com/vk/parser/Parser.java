@@ -1,8 +1,8 @@
-package com.vk.jsonaudioparser;
+package com.vk.parser;
 
-public class AudioParser {
+public class Parser {
 
-    Response response;
+    private Response response;
 
     public Response getResponse() {
         return response;

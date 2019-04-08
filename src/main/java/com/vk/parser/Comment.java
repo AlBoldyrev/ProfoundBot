@@ -1,10 +1,10 @@
-package com.vk.jsonaudioparser;
+package com.vk.parser;
 
 public class Comment {
 
-    int count;
-    int can_post;
-    boolean groups_can_post;
+    private int count;
+    private int can_post;
+    private boolean groups_can_post;
 
     public int getCount() {
         return count;

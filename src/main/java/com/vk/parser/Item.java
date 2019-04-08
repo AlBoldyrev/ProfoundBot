@@ -1,26 +1,26 @@
-package com.vk.jsonaudioparser;
+package com.vk.parser;
 
 import java.util.List;
 
 public class Item {
 
-    int id;
-    int from_id;
-    int owner_id;
-    int date;
-    int marked_as_ads;
-    String post_type;
-    String text;
-    int can_edit;
-    int created_by;
-    int can_delete;
-    int can_pin;
-    List<Attachment> attachments;
-    PostSource post_source;
-    Comment comments;
-    Like likes;
-    Repost reposts;
-    View views;
+    private int id;
+    private int from_id;
+    private int owner_id;
+    private int date;
+    private int marked_as_ads;
+    private String post_type;
+    private String text;
+    private int can_edit;
+    private int created_by;
+    private int can_delete;
+    private int can_pin;
+    private List<Attachment> attachments;
+    private PostSource post_source;
+    private Comment comments;
+    private Like likes;
+    private Repost reposts;
+    private View views;
 
     public int getId() {
         return id;

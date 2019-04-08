@@ -1,8 +1,8 @@
-package com.vk.jsonaudioparser;
+package com.vk.parser;
 
 public class View {
 
-    int count;
+    private int count;
 
     public int getCount() {
         return count;

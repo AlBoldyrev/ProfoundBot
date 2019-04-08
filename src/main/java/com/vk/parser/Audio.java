@@ -1,15 +1,15 @@
-package com.vk.jsonaudioparser;
+package com.vk.parser;
 
 public class Audio {
 
-    int id;
-    int owner_id;
-    String artist;
-    String title;
-    int duration;
-    int date;
-    String url;
-    boolean is_hq;
+    private int id;
+    private int owner_id;
+    private String artist;
+    private String title;
+    private int duration;
+    private int date;
+    private  String url;
+    private boolean is_hq;
 
     public int getId() {
         return id;

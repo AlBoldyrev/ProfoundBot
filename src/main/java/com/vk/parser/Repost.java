@@ -1,9 +1,9 @@
-package com.vk.jsonaudioparser;
+package com.vk.parser;
 
 public class Repost {
 
-    int count;
-    int user_reposted;
+    private int count;
+    private int user_reposted;
 
     public int getCount() {
         return count;

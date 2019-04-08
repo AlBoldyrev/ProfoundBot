@@ -5,11 +5,7 @@ import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
-import com.vk.strategy.realizations.MessageAllow;
-import com.vk.strategy.realizations.MessageNew;
-import com.vk.strategy.realizations.MessageReply;
-import com.vk.strategy.realizations.MessageTypingState;
-import com.vk.strategy.realizations.WallPostNew;
+import com.vk.strategy.realizations.*;
 import com.vk.util.PhotoDownloader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -76,6 +72,9 @@ public class Config {
 
     @Bean
     PhotoDownloader photoDownloader() { return new PhotoDownloader();}
+
+    @Bean
+    AdminTool adminTool() {return new AdminTool();}
 
 
 

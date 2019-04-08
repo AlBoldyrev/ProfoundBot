@@ -12,9 +12,9 @@ import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.application.IResponseHandler;
 import com.vk.constants.Constants;
-import com.vk.jsonaudioparser.Audio;
-import com.vk.jsonaudioparser.AudioParser;
-import com.vk.jsonaudioparser.Item;
+import com.vk.parser.Audio;
+import com.vk.parser.Parser;
+import com.vk.parser.Item;
 import com.vk.lirestaff.IndexSearcher;
 import com.vk.model.message_new.ModelMessageNew;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import static com.vk.constants.Constants.ALEXANDER_BOLDYREV_VKID;
 import static com.vk.constants.Constants.NUMBER_OF_PHOTOS_IN_THE_MESSAGE;
 
 
@@ -46,10 +47,20 @@ public class MessageNew implements IResponseHandler {
 
     @Autowired
     VkApiClient apiClient;
-    
+
+    @Autowired
+    AdminTool adminTool;
+
     private final Random random = new Random();
 
     public void handle(JsonObject jsonObject, GroupActor groupActor) throws Exception {
+
+        ModelMessageNew message = parseJsonIntoModelMessageNew(jsonObject);
+        int userIdThatSendTheMessage = message.getInfo().getFrom_id();
+
+        if (userIdThatSendTheMessage == ALEXANDER_BOLDYREV_VKID) {
+           adminTool.handleMessageNewAsAdmin(jsonObject);
+        }
 
         List<String> audioNames = getAudioNames();
         List<String> photoNames = getPhotoNames(jsonObject);
@@ -128,13 +139,17 @@ public class MessageNew implements IResponseHandler {
         List<String> audioNames = new ArrayList<>();
 
         String s = apiClient.wall().get(userActor).ownerId(Constants.PUBLIC_ID_WITH_AUDIO_ON_THE_WALL).executeAsString();
-        AudioParser audioParser = gson.fromJson(s, AudioParser.class);
+        Parser parser = gson.fromJson(s, Parser.class);
 
-        List<Item> items = audioParser.getResponse().getItems();
+        List<Item> items = parser.getResponse().getItems();
         for (Item item: items) {
-            List<com.vk.jsonaudioparser.Attachment> audioAttachments = item.getAttachments();
-            for (com.vk.jsonaudioparser.Attachment attachment: audioAttachments) {
+            List<com.vk.parser.Attachment> audioAttachments = item.getAttachments();
+            for (com.vk.parser.Attachment attachment: audioAttachments) {
+
                 Audio audio = attachment.getAudio();
+                if (audio == null) {
+                    continue;
+                }
                 int ownerId = audio.getOwner_id();
                 int id = audio.getId();
                 String audioName = "audio" + ownerId + "_" + id;
@@ -146,11 +161,14 @@ public class MessageNew implements IResponseHandler {
 
     private List<String> getPhotoNames(JsonObject jsonObject) throws IOException {
 
+        ModelMessageNew message = parseJsonIntoModelMessageNew(jsonObject);
+
         List<String> idList = new ArrayList<>();
+
+        int senderUserId;
+
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
-        ModelMessageNew message = gson.fromJson(jsonObject, ModelMessageNew.class);
-        int senderUserId;
 
         Type type = new TypeToken<Map<String, Object>>(){}.getType();
         Map<String, Object> myMap = gson.fromJson(jsonObject, type);
@@ -196,6 +214,13 @@ public class MessageNew implements IResponseHandler {
 
         ArrayList<LinkedTreeMap<String,Object>> attachments = (ArrayList<LinkedTreeMap<String,Object>>) object.get("attachments");
         return !attachments.isEmpty();
+    }
+
+     ModelMessageNew parseJsonIntoModelMessageNew(JsonObject jsonObject) {
+
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        return gson.fromJson(jsonObject, ModelMessageNew.class);
     }
 
 }

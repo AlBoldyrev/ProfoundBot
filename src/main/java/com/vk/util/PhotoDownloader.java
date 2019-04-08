@@ -21,13 +21,15 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static com.vk.constants.Constants.MAX_AVAILABLE_PHOTOS_COUNT;
+
 @Component
 public class PhotoDownloader {
 
     @Autowired
     UserActor userActor;
 
-    private final static int MAX_AVAILABLE_PHOTOS_COUNT = 1000;
+
 
     public void downloadPhotosFromAlbum(VkApiClient apiClient, String albumId, int groupId) throws ClientException, IOException {
 
@@ -59,7 +61,7 @@ public class PhotoDownloader {
         }
     }
 
-    private PhotoParser getPhotoParserObject(VkApiClient apiClient, String albumId, int groupId, int photoCount, int offset) throws ClientException {
+    public PhotoParser getPhotoParserObject(VkApiClient apiClient, String albumId, int groupId, int photoCount, int offset) throws ClientException {
 
         String responseWithPhotoUrls = apiClient.photos().get(userActor).albumId(albumId).count(photoCount).offset(offset).ownerId(groupId).executeAsString();
 
