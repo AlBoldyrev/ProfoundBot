@@ -23,7 +23,7 @@ public class IndexSearcher {
 
     private ArrayList<String> idList = new ArrayList<>();
 
-    public IndexSearcher(String imgPath) throws IOException {
+    public IndexSearcher(String imgPath, String reIndex) throws IOException {
 
         boolean passed = false;
         BufferedImage img = null;
@@ -44,7 +44,7 @@ public class IndexSearcher {
             System.out.println("        Run \"Searcher <query image>\" to search for <query image>.nameThread:" + Thread.currentThread().getName());
         }
 
-        IndexReader ir = DirectoryReader.open(FSDirectory.open(Paths.get(Constants.indexPath)));
+        IndexReader ir = DirectoryReader.open(FSDirectory.open(Paths.get(reIndex)));
         ImageSearcher searcher = new GenericFastImageSearcher(30, CEDD.class);
         ImageSearchHits hits = searcher.search(img, ir);
         TreeMap<Double,Integer> map = new TreeMap<>();

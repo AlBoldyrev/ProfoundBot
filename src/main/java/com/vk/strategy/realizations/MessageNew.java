@@ -12,11 +12,13 @@ import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.application.IResponseHandler;
 import com.vk.constants.Constants;
+import com.vk.entities.PhotoAudio;
 import com.vk.parser.Audio;
 import com.vk.parser.Parser;
 import com.vk.parser.Item;
 import com.vk.lirestaff.IndexSearcher;
 import com.vk.model.message_new.ModelMessageNew;
+import com.vk.repository.PhotoAudioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,8 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static com.vk.constants.Constants.ALEXANDER_BOLDYREV_VKID;
-import static com.vk.constants.Constants.NUMBER_OF_PHOTOS_IN_THE_MESSAGE;
+import static com.vk.constants.Constants.*;
 
 
 @Component
@@ -51,6 +52,9 @@ public class MessageNew implements IResponseHandler {
     @Autowired
     AdminTool adminTool;
 
+    @Autowired
+    PhotoAudioRepository photoAudioRepository;
+
     private final Random random = new Random();
 
     public void handle(JsonObject jsonObject, GroupActor groupActor) throws Exception {
@@ -63,23 +67,49 @@ public class MessageNew implements IResponseHandler {
         }
 
         List<String> audioNames = getAudioNames();
-        List<String> photoNames = getPhotoNames(jsonObject);
+        List<String> photoNames = getPhotoNames(jsonObject, userPhotoFolderPath, indexPath, NUMBER_OF_PHOTOS_IN_THE_MESSAGE);
+        List<String> photoNamesAudio = getPhotoNames(jsonObject, userPhotoFolderPathAudio, indexPathAudio, 1);
+        List<String> photoNamesAudioCommerce = getPhotoNames(jsonObject, userPhotoFolderPathAudioCommerce, indexPathAudioCommerce, 1);
+        System.out.println(photoNamesAudio);
+        List<PhotoAudio> photoAudios;
+        List<PhotoAudio> photoAudiosCommerce;
+        List<String> audioNamesFromAlbum = new ArrayList<>();
+        List<String> audioNamesFromAlbumCommerce = new ArrayList<>();
+        if (!photoNamesAudio.isEmpty()) {
+            photoAudios = photoAudioRepository.findByPhotoName(photoNamesAudio.get(0));
+            for (PhotoAudio photoAudio : photoAudios) {
+                audioNamesFromAlbum.add(photoAudio.getAudioName());
+            }
+        }
+
+        if (!photoNamesAudioCommerce.isEmpty()) {
+            photoAudiosCommerce = photoAudioRepository.findByPhotoName(photoNamesAudioCommerce.get(0));
+            for (PhotoAudio photoAudio : photoAudiosCommerce) {
+                audioNamesFromAlbumCommerce.add(photoAudio.getAudioName());
+            }
+        }
 
         if (isAttachmentExists(jsonObject)) {
-            apiClient.messages().send(groupActor).message("Свежая подборочка!").userId(662638).randomId(random.nextInt()).attachment(photoNames).execute();
+            apiClient.messages().send(groupActor).message("Свежая подборочка!").userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(photoNames).execute();
         }
-        apiClient.messages().send(groupActor).userId(662638).randomId(random.nextInt()).attachment(audioNames.get(random.nextInt(audioNames.size()))).execute();
 
+        if (!audioNamesFromAlbum.isEmpty() && !audioNamesFromAlbumCommerce.isEmpty()) {
+            if (random.nextBoolean()) {
+                apiClient.messages().send(groupActor).userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(audioNamesFromAlbum.get(random.nextInt(audioNamesFromAlbum.size()))).execute();
+            } else {
+                apiClient.messages().send(groupActor).userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(audioNamesFromAlbumCommerce.get(random.nextInt(audioNamesFromAlbumCommerce.size()))).execute();
+            }
+        }
     }
 
-    private ArrayList<String> listOfIdFromSearch(String URL, int userId) throws IOException {
+    private ArrayList<String> listOfIdFromSearch(String URL, int userId, String userPhotoFolderPath, String reIndex) throws IOException {
 
         IndexSearcher indexSearcher = null;
         File userFile;
         BufferedImage img;
         String fileName;
 
-        File folder = new File(Constants.userPhotoFolderPath + userId);
+        File folder = new File(userPhotoFolderPath + userId);
         if (!folder.exists()) {
             boolean isFolderCreated = folder.mkdir();
             System.out.println("Is folder created? --> " + isFolderCreated);
@@ -87,19 +117,19 @@ public class MessageNew implements IResponseHandler {
 
         try(InputStream in = new URL(URL).openStream()){
             try {
-                Files.copy(in, Paths.get(Constants.userPhotoFolderPath + userId + "\\" + userId + "&1.png"));
+                Files.copy(in, Paths.get(userPhotoFolderPath + userId + "\\" + userId + "&1.png"));
             } catch (FileAlreadyExistsException faee) {
                 System.out.println("Photo is already exists");
             }
         }
 
-        File[] files = new File(Constants.userPhotoFolderPath + userId).listFiles();
+        File[] files = new File(userPhotoFolderPath + userId).listFiles();
 
         for (File file : files) {
             if (file.isFile()) {
                 boolean isFileDeleted = file.delete();
             }
-            fileName = Constants.userPhotoFolderPath + userId + "\\" + userId + "&1.png";
+            fileName = userPhotoFolderPath + userId + "\\" + userId + "&1.png";
             img = ImageIO.read(new URL(URL));
             userFile = new File(fileName);
 
@@ -115,7 +145,7 @@ public class MessageNew implements IResponseHandler {
             }
 
             if (userFile.exists()) {
-                indexSearcher = new IndexSearcher(fileName);
+                indexSearcher = new IndexSearcher(fileName, reIndex);
             } else {
                 System.out.println("UserFile is now exists! ");
                 return new ArrayList<>();
@@ -159,7 +189,7 @@ public class MessageNew implements IResponseHandler {
         return audioNames;
     }
 
-    private List<String> getPhotoNames(JsonObject jsonObject) throws IOException {
+    private List<String> getPhotoNames(JsonObject jsonObject, String userPhotoFolderPath, String reIndex, int numberOfPhotos) throws IOException {
 
         ModelMessageNew message = parseJsonIntoModelMessageNew(jsonObject);
 
@@ -186,13 +216,13 @@ public class MessageNew implements IResponseHandler {
 
             senderUserId = message.getInfo().getFrom_id();
 
-            idList = listOfIdFromSearch(url, senderUserId);
+            idList = listOfIdFromSearch(url, senderUserId, userPhotoFolderPath, reIndex);
 
         }
 
         List<String> photoNames = new ArrayList<>();
         if (isAttachmentExists(jsonObject)) {
-            for (int i = 1; i < NUMBER_OF_PHOTOS_IN_THE_MESSAGE + 1; i++) {
+            for (int i = 1; i < numberOfPhotos + 1; i++) {
                 String photoName = idList.get(i);
                 photoName = photoName.substring(0, photoName.length() - 4);
                 photoNames.add(photoName);
