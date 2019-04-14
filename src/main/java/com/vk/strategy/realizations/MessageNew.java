@@ -68,26 +68,26 @@ public class MessageNew implements IResponseHandler {
 
         List<String> audioNames = getAudioNames();
         List<String> photoNames = getPhotoNames(jsonObject, userPhotoFolderPath, indexPath, NUMBER_OF_PHOTOS_IN_THE_MESSAGE);
-        List<String> photoNamesAudio = getPhotoNames(jsonObject, userPhotoFolderPathAudio, indexPathAudio, 1);
-        List<String> photoNamesAudioCommerce = getPhotoNames(jsonObject, userPhotoFolderPathAudioCommerce, indexPathAudioCommerce, 1);
-        System.out.println(photoNamesAudio);
+//        List<String> photoNamesAudio = getPhotoNames(jsonObject, userPhotoFolderPathAudio, indexPathAudio, 1);
+//        List<String> photoNamesAudioCommerce = getPhotoNames(jsonObject, userPhotoFolderPathAudioCommerce, indexPathAudioCommerce, 1);
+//        System.out.println(photoNamesAudio);
         List<PhotoAudio> photoAudios;
         List<PhotoAudio> photoAudiosCommerce;
         List<String> audioNamesFromAlbum = new ArrayList<>();
         List<String> audioNamesFromAlbumCommerce = new ArrayList<>();
-        if (!photoNamesAudio.isEmpty()) {
-            photoAudios = photoAudioRepository.findByPhotoName(photoNamesAudio.get(0));
-            for (PhotoAudio photoAudio : photoAudios) {
-                audioNamesFromAlbum.add(photoAudio.getAudioName());
-            }
-        }
-
-        if (!photoNamesAudioCommerce.isEmpty()) {
-            photoAudiosCommerce = photoAudioRepository.findByPhotoName(photoNamesAudioCommerce.get(0));
-            for (PhotoAudio photoAudio : photoAudiosCommerce) {
-                audioNamesFromAlbumCommerce.add(photoAudio.getAudioName());
-            }
-        }
+//        if (!photoNamesAudio.isEmpty()) {
+//            photoAudios = photoAudioRepository.findByPhotoName(photoNamesAudio.get(0));
+//            for (PhotoAudio photoAudio : photoAudios) {
+//                audioNamesFromAlbum.add(photoAudio.getAudioName());
+//            }
+//        }
+//
+//        if (!photoNamesAudioCommerce.isEmpty()) {
+//            photoAudiosCommerce = photoAudioRepository.findByPhotoName(photoNamesAudioCommerce.get(0));
+//            for (PhotoAudio photoAudio : photoAudiosCommerce) {
+//                audioNamesFromAlbumCommerce.add(photoAudio.getAudioName());
+//            }
+//        }
 
         if (isAttachmentExists(jsonObject)) {
             apiClient.messages().send(groupActor).message("Свежая подборочка!").userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(photoNames).execute();

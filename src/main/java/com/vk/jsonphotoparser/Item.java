@@ -2,17 +2,17 @@ package com.vk.jsonphotoparser;
 
 public class Item {
 
-    int id;
-    int album_id;
-    int owner_id;
-    int user_id;
-    String photo_75;
-    String photo_130;
-    String photo_604;
-    int width;
-    int height;
-    String text;
-    int date;
+    private int id;
+    private int album_id;
+    private int owner_id;
+    private int user_id;
+    private String photo_75;
+    private String photo_130;
+    private String photo_604;
+    private int width;
+    private int height;
+    private String text;
+    private  int date;
 
 
     public int getId() {

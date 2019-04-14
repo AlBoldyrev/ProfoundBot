@@ -4,18 +4,18 @@ import java.util.List;
 
 public class Info {
 
-    int date;
-    int from_id;
-    int id;
-    int out;
-    int peer_id;
-    String text;
-    int conversation_message_id;
-    List<Message> messages;
-    boolean important;
-    int random_id;
-    List<Attachment> attachments;
-    boolean is_hidden;
+    private int date;
+    private int from_id;
+    private int id;
+    private int out;
+    private int peer_id;
+    private String text;
+    private int conversation_message_id;
+    private List<Message> messages;
+    private boolean important;
+    private int random_id;
+    private List<Attachment> attachments;
+    private boolean is_hidden;
 
     public int getFromId() {
         return from_id;

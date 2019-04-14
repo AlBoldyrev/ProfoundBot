@@ -2,7 +2,7 @@ package com.vk.jsonphotoparser;
 
 public class PhotoParser {
 
-    Response response;
+    private Response response;
 
     public Response getResponse() {
         return response;

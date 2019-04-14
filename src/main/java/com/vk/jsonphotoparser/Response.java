@@ -4,8 +4,8 @@ import java.util.List;
 
 public class Response {
 
-    int count;
-    List<Item> items;
+    private int count;
+    private List<Item> items;
 
     public int getCount() {
         return count;

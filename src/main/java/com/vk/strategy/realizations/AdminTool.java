@@ -152,7 +152,12 @@ public class AdminTool {
                     System.out.println("s");
                 }
             }
+        } else if (messageText.equals("Индекс")) {
+            Indexer indexer = new Indexer(Constants.photoFolderPath, Constants.reIndexPath);
+        } else if (messageText.equals("Скачать фотки")) {
+            photoDownloader.downloadPhotosFromAlbum(apiClient, "256054712", -104375368, Constants.photoFolderPath);
         }
+
 
     }
 }
