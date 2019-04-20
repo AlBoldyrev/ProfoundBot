@@ -27,7 +27,7 @@ import static com.vk.constants.Constants.MAX_AVAILABLE_PHOTOS_COUNT;
 public class PhotoDownloader {
 
     @Autowired
-    UserActor userActor;
+    private UserActor userActor;
 
     public void downloadPhotosFromAlbum(VkApiClient apiClient, String albumId, int groupId, String photoFolderPath) throws ClientException, IOException {
 

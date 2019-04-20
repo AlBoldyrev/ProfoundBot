@@ -13,13 +13,13 @@ import org.springframework.stereotype.Component;
 public class ApplicationStartup implements ApplicationListener<ApplicationReadyEvent> {
 
     @Autowired
-    BotRequestHandler botHandler;
+    private BotRequestHandler botHandler;
 
     @Autowired
-    GroupActor groupActor;
+    private GroupActor groupActor;
 
     @Autowired
-    VkApiClient vk;
+    private VkApiClient vk;
 
     /**
      * This event is executed as late as conceivably possible to indicate that
@@ -42,7 +42,5 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return;
     }
 }

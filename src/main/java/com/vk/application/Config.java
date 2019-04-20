@@ -5,7 +5,12 @@ import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
+import com.vk.constants.Constants;
 import com.vk.strategy.realizations.*;
+import com.vk.strategy.realizations.admintool.AlbumAudioPhotoCorrelator;
+import com.vk.strategy.realizations.admintool.IndexAudioCommerceFromAlbum;
+import com.vk.strategy.realizations.admintool.IndexAudioFromAlbum;
+import com.vk.strategy.realizations.admintool.IndexPhotoInFolderOnServer;
 import com.vk.util.PhotoDownloader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -76,7 +81,42 @@ public class Config {
     @Bean
     AdminTool adminTool() {return new AdminTool();}
 
+    @Bean
+    AlbumAudioPhotoCorrelator albumAudioPhotoCorrelator() {return new AlbumAudioPhotoCorrelator();}
 
+    @Bean
+    IndexAudioCommerceFromAlbum indexAudioCommerceFromAlbum() {return new IndexAudioCommerceFromAlbum();}
+
+    @Bean
+    IndexAudioFromAlbum indexAudioFromAlbum() {return new IndexAudioFromAlbum();}
+
+    @Bean
+    IndexPhotoInFolderOnServer indexPhotoInFolderOnServer() {return new IndexPhotoInFolderOnServer();}
+
+    @Bean
+    Constants constants(Properties properties) {
+        String indexPath = properties.getProperty("indexPath");
+        String reIndexPath = properties.getProperty("reIndexPath");
+        String photoFolderPath = properties.getProperty("photoFolderPath");
+        String userPhotoFolderPath = properties.getProperty("userPhotoFolderPath");
+        String indexPathAudio = properties.getProperty("indexPathAudio");
+        String reIndexPathAudio = properties.getProperty("reIndexPathAudio");
+        String photoFolderPathAudio = properties.getProperty("photoFolderPathAudio");
+        String userPhotoFolderPathAudio = properties.getProperty("userPhotoFolderPathAudio");
+        String indexPathAudioCommerce = properties.getProperty("indexPathAudioCommerce");
+        String reIndexPathAudioCommerce = properties.getProperty("reIndexPathAudioCommerce");
+        String photoFolderPathAudioCommerce = properties.getProperty("photoFolderPathAudioCommerce");
+        String userPhotoFolderPathAudioCommerce = properties.getProperty("userPhotoFolderPathAudioCommerce");
+        String groupIdWithMinus = "-" + properties.getProperty("groupId");
+        String albumMusicId = properties.getProperty("albumMusicId");
+        String albumMusicCommerceId = properties.getProperty("albumMusicCommerceId");
+
+        System.out.println("It's a " + properties.getProperty("stand"));
+
+        return new Constants(indexPath, reIndexPath, photoFolderPath, userPhotoFolderPath ,indexPathAudio,
+                reIndexPathAudio, photoFolderPathAudio, userPhotoFolderPathAudio, indexPathAudioCommerce, reIndexPathAudioCommerce,
+                photoFolderPathAudioCommerce, userPhotoFolderPathAudioCommerce, Integer.parseInt(groupIdWithMinus), albumMusicId, albumMusicCommerceId);
+    }
 
 
 

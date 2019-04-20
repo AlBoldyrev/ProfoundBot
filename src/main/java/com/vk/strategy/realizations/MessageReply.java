@@ -5,7 +5,6 @@ import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.application.IResponseHandler;
 import org.springframework.stereotype.Component;
 
-
 @Component
 public class MessageReply implements IResponseHandler {
 

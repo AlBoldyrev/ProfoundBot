@@ -19,7 +19,7 @@ import java.util.Iterator;
 
 public class Indexer {
 
-    String imgFolderPath;
+    private String imgFolderPath;
 
     public Indexer(String imgFolderPath,String pathForIndex) throws IOException {
 

@@ -20,22 +20,22 @@ import java.util.Map;
 import java.util.Random;
 
 @Component
-public class BotRequestHandler {
+class BotRequestHandler {
 
     @Autowired
-    MessageNew messageNew;
+    private MessageNew messageNew;
 
     @Autowired
-    MessageReply messageReply;
+    private MessageReply messageReply;
 
     @Autowired
-    WallPostNew wallPostNew;
+    private WallPostNew wallPostNew;
 
     @Autowired
-    MessageAllow messageAllow;
+    private MessageAllow messageAllow;
 
     @Autowired
-    MessageTypingState messageTypingState;
+    private MessageTypingState messageTypingState;
 
     private static final Logger LOG = LoggerFactory.getLogger(BotRequestHandler.class);
     private static final int DEFAULT_WAIT = 10;
@@ -78,6 +78,7 @@ public class BotRequestHandler {
                     responseHandler.handle(jsonObject, groupActor);
                 } catch (NullPointerException npe) {
                     System.out.println("This request can not be handled right now.");
+                    npe.getMessage();
                 }
 
             }

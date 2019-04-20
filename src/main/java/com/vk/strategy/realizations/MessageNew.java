@@ -39,21 +39,23 @@ import java.util.Random;
 
 import static com.vk.constants.Constants.*;
 
-
 @Component
 public class MessageNew implements IResponseHandler {
 
     @Autowired
-    UserActor userActor;
+    private Constants constants;
 
     @Autowired
-    VkApiClient apiClient;
+    private UserActor userActor;
 
     @Autowired
-    AdminTool adminTool;
+    private VkApiClient apiClient;
 
     @Autowired
-    PhotoAudioRepository photoAudioRepository;
+    private AdminTool adminTool;
+
+    @Autowired
+    private PhotoAudioRepository photoAudioRepository;
 
     private final Random random = new Random();
 
@@ -66,39 +68,48 @@ public class MessageNew implements IResponseHandler {
            adminTool.handleMessageNewAsAdmin(jsonObject);
         }
 
-        List<String> audioNames = getAudioNames();
-        List<String> photoNames = getPhotoNames(jsonObject, userPhotoFolderPath, indexPath, NUMBER_OF_PHOTOS_IN_THE_MESSAGE);
-//        List<String> photoNamesAudio = getPhotoNames(jsonObject, userPhotoFolderPathAudio, indexPathAudio, 1);
-//        List<String> photoNamesAudioCommerce = getPhotoNames(jsonObject, userPhotoFolderPathAudioCommerce, indexPathAudioCommerce, 1);
-//        System.out.println(photoNamesAudio);
+        List<String> photoNames = getPhotoNames(jsonObject, constants.getUserPhotoFolderPath(), constants.getIndexPath(), NUMBER_OF_PHOTOS_IN_THE_MESSAGE);
+        System.out.println("1");
+        List<String> photoNamesAudio = getPhotoNames(jsonObject, constants.getUserPhotoFolderPathAudio(), constants.getIndexPathAudio(), 1);
+        System.out.println("2");
+        List<String> photoNamesAudioCommerce = getPhotoNames(jsonObject, constants.getUserPhotoFolderPathAudioCommerce(), constants.getIndexPathAudioCommerce(), 1);
+        System.out.println("3");
         List<PhotoAudio> photoAudios;
         List<PhotoAudio> photoAudiosCommerce;
         List<String> audioNamesFromAlbum = new ArrayList<>();
         List<String> audioNamesFromAlbumCommerce = new ArrayList<>();
-//        if (!photoNamesAudio.isEmpty()) {
-//            photoAudios = photoAudioRepository.findByPhotoName(photoNamesAudio.get(0));
-//            for (PhotoAudio photoAudio : photoAudios) {
-//                audioNamesFromAlbum.add(photoAudio.getAudioName());
-//            }
-//        }
-//
-//        if (!photoNamesAudioCommerce.isEmpty()) {
-//            photoAudiosCommerce = photoAudioRepository.findByPhotoName(photoNamesAudioCommerce.get(0));
-//            for (PhotoAudio photoAudio : photoAudiosCommerce) {
-//                audioNamesFromAlbumCommerce.add(photoAudio.getAudioName());
-//            }
-//        }
+        if (!photoNamesAudio.isEmpty()) {
+            photoAudios = photoAudioRepository.findByPhotoName(photoNamesAudio.get(0));
+            for (PhotoAudio photoAudio : photoAudios) {
+                audioNamesFromAlbum.add(photoAudio.getAudioName());
+            }
+        }
+
+        if (!photoNamesAudioCommerce.isEmpty()) {
+            photoAudiosCommerce = photoAudioRepository.findByPhotoName(photoNamesAudioCommerce.get(0));
+            for (PhotoAudio photoAudio : photoAudiosCommerce) {
+                audioNamesFromAlbumCommerce.add(photoAudio.getAudioName());
+            }
+        }
 
         if (isAttachmentExists(jsonObject)) {
             apiClient.messages().send(groupActor).message("Свежая подборочка!").userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(photoNames).execute();
         }
 
-        if (!audioNamesFromAlbum.isEmpty() && !audioNamesFromAlbumCommerce.isEmpty()) {
-            if (random.nextBoolean()) {
-                apiClient.messages().send(groupActor).userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(audioNamesFromAlbum.get(random.nextInt(audioNamesFromAlbum.size()))).execute();
+        if (!audioNamesFromAlbum.isEmpty()) {
+
+            if (!audioNamesFromAlbumCommerce.isEmpty()) {
+
+                if (random.nextBoolean()) {
+                    apiClient.messages().send(groupActor).userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(audioNamesFromAlbum.get(random.nextInt(audioNamesFromAlbum.size()))).execute();
+                } else {
+                    apiClient.messages().send(groupActor).userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(audioNamesFromAlbumCommerce.get(random.nextInt(audioNamesFromAlbumCommerce.size()))).execute();
+                }
+
             } else {
-                apiClient.messages().send(groupActor).userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(audioNamesFromAlbumCommerce.get(random.nextInt(audioNamesFromAlbumCommerce.size()))).execute();
+                apiClient.messages().send(groupActor).userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(audioNamesFromAlbum.get(random.nextInt(audioNamesFromAlbum.size()))).execute();
             }
+
         }
     }
 
@@ -112,14 +123,12 @@ public class MessageNew implements IResponseHandler {
         File folder = new File(userPhotoFolderPath + userId);
         if (!folder.exists()) {
             boolean isFolderCreated = folder.mkdir();
-            System.out.println("Is folder created? --> " + isFolderCreated);
         }
 
         try(InputStream in = new URL(URL).openStream()){
             try {
                 Files.copy(in, Paths.get(userPhotoFolderPath + userId + "\\" + userId + "&1.png"));
             } catch (FileAlreadyExistsException faee) {
-                System.out.println("Photo is already exists");
             }
         }
 
@@ -140,14 +149,12 @@ public class MessageNew implements IResponseHandler {
             if (img != null) {
                 ImageIO.write(img, "png", userFile);
             } else {
-                System.out.println("Image is null! ");
                 return new ArrayList<>();
             }
 
             if (userFile.exists()) {
                 indexSearcher = new IndexSearcher(fileName, reIndex);
             } else {
-                System.out.println("UserFile is now exists! ");
                 return new ArrayList<>();
             }
         }
@@ -222,10 +229,18 @@ public class MessageNew implements IResponseHandler {
 
         List<String> photoNames = new ArrayList<>();
         if (isAttachmentExists(jsonObject)) {
-            for (int i = 1; i < numberOfPhotos + 1; i++) {
-                String photoName = idList.get(i);
-                photoName = photoName.substring(0, photoName.length() - 4);
-                photoNames.add(photoName);
+            if (idList.size() > 1) {
+                for (int i = 0; i < numberOfPhotos + 1; i++) {
+                    String photoName = idList.get(i);
+                    photoName = photoName.substring(0, photoName.length() - 4);
+                    photoNames.add(photoName);
+                }
+            } else {
+                for (int i = 0; i < numberOfPhotos + 1; i++) {
+                    String photoName = idList.get(0);
+                    photoName = photoName.substring(0, photoName.length() - 4);
+                    photoNames.add(photoName);
+                }
             }
         }
         return photoNames;
