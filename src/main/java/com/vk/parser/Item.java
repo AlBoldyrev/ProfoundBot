@@ -21,6 +21,8 @@ public class Item {
     private Like likes;
     private Repost reposts;
     private View views;
+    private Message message;
+    private int unread;
 
     public int getId() {
         return id;
@@ -156,5 +158,21 @@ public class Item {
 
     public void setViews(View views) {
         this.views = views;
+    }
+
+    public Message getMessage() {
+        return message;
+    }
+
+    public void setMessage(Message message) {
+        this.message = message;
+    }
+
+    public int getUnread() {
+        return unread;
+    }
+
+    public void setUnread(int unread) {
+        this.unread = unread;
     }
 }

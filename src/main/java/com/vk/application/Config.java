@@ -7,10 +7,7 @@ import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.constants.Constants;
 import com.vk.strategy.realizations.*;
-import com.vk.strategy.realizations.admintool.AlbumAudioPhotoCorrelator;
-import com.vk.strategy.realizations.admintool.IndexAudioCommerceFromAlbum;
-import com.vk.strategy.realizations.admintool.IndexAudioFromAlbum;
-import com.vk.strategy.realizations.admintool.IndexPhotoInFolderOnServer;
+import com.vk.strategy.realizations.admintool.*;
 import com.vk.util.PhotoDownloader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -92,6 +89,9 @@ public class Config {
 
     @Bean
     IndexPhotoInFolderOnServer indexPhotoInFolderOnServer() {return new IndexPhotoInFolderOnServer();}
+
+    @Bean
+    AnswerToUnreadMessages answerToUnreadMessages() {return  new AnswerToUnreadMessages();}
 
     @Bean
     Constants constants(Properties properties) {

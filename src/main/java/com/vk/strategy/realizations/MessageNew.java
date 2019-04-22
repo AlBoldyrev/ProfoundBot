@@ -93,7 +93,7 @@ public class MessageNew implements IResponseHandler {
         }
 
         if (isAttachmentExists(jsonObject)) {
-            apiClient.messages().send(groupActor).message("Свежая подборочка!").userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(photoNames).execute();
+            apiClient.messages().send(groupActor).userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(photoNames).execute();
         }
 
         if (!audioNamesFromAlbum.isEmpty()) {

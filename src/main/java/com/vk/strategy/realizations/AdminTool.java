@@ -2,6 +2,7 @@ package com.vk.strategy.realizations;
 
 import com.google.gson.JsonObject;
 import com.vk.api.sdk.client.VkApiClient;
+import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.model.message_new.ModelMessageNew;
 import com.vk.strategy.realizations.admintool.*;
@@ -33,13 +34,17 @@ public class AdminTool {
     @Autowired
     private IndexAudioCommerceFromAlbum indexAudioCommerceFromAlbum;
 
-    void handleMessageNewAsAdmin(JsonObject jsonObject) throws ClientException, IOException {
+    @Autowired
+    private AnswerToUnreadMessages answerToUnreadMessages;
+
+    void handleMessageNewAsAdmin(JsonObject jsonObject) throws ClientException, IOException, ApiException, InterruptedException {
 
         Map<String, AdminToolResponseHandler> strategyHandlers = new HashMap<>();
         strategyHandlers.put("Сделать связь фоток с музоном по альбомам", albumAudioPhotoCorrelator);
         strategyHandlers.put("Индекс основной папки с фото", indexPhotoInFolderOnServer);
         strategyHandlers.put("Скачать фото и сделать индекс для папки с музоном", indexAudioFromAlbum);
         strategyHandlers.put("Скачать фото и сделать индекс для папки с коммерческим музоном", indexAudioCommerceFromAlbum);
+        strategyHandlers.put("Ответить на непрочитанные сообщения", answerToUnreadMessages);
 
         ModelMessageNew modelMessageNew = messageNew.parseJsonIntoModelMessageNew(jsonObject);
         String messageText = modelMessageNew.getInfo().getText();
