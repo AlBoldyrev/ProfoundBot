@@ -47,6 +47,7 @@
 			<artifactId>sdk</artifactId>
 			<version>0.5.12</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>

@@ -1,8 +1,8 @@
-package com.vk.model.message_new;
+package com.vk.parser;
 
 import java.util.List;
 
-public class Info {
+public class Object {
 
     private int date;
     private int from_id;
@@ -14,7 +14,7 @@ public class Info {
     private List<Message> messages;
     private boolean important;
     private int random_id;
-    private List<Attachment> attachments;
+    private List<com.vk.parser.Attachment> attachments;
     private boolean is_hidden;
 
     public int getFromId() {
@@ -77,10 +77,6 @@ public class Info {
         this.conversation_message_id = conversation_message_id;
     }
 
-    public List<Message> getMessages() {
-        return messages;
-    }
-
     public void setMessages(List<Message> messages) {
         this.messages = messages;
     }
@@ -101,9 +97,6 @@ public class Info {
         this.random_id = random_id;
     }
 
-    public List<Attachment> getAttachments() {
-        return attachments;
-    }
 
     public void setAttachments(List<Attachment> attachments) {
         this.attachments = attachments;
@@ -115,5 +108,13 @@ public class Info {
 
     public void setIs_hidden(boolean is_hidden) {
         this.is_hidden = is_hidden;
+    }
+
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public List<Attachment> getAttachments() {
+        return attachments;
     }
 }

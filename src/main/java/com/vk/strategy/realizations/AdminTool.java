@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
-import com.vk.model.message_new.ModelMessageNew;
+import com.vk.parser.ModelMessageNew;
 import com.vk.strategy.realizations.admintool.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -47,7 +47,7 @@ public class AdminTool {
         strategyHandlers.put("Ответить на непрочитанные сообщения", answerToUnreadMessages);
 
         ModelMessageNew modelMessageNew = messageNew.parseJsonIntoModelMessageNew(jsonObject);
-        String messageText = modelMessageNew.getInfo().getText();
+        String messageText = modelMessageNew.getObject().getText();
 
         AdminToolResponseHandler handler = strategyHandlers.get(messageText);
         if (handler != null) {

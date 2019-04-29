@@ -13,11 +13,8 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.application.IResponseHandler;
 import com.vk.constants.Constants;
 import com.vk.entities.PhotoAudio;
-import com.vk.parser.Audio;
-import com.vk.parser.Parser;
-import com.vk.parser.Item;
+import com.vk.parser.*;
 import com.vk.lirestaff.IndexSearcher;
-import com.vk.model.message_new.ModelMessageNew;
 import com.vk.repository.PhotoAudioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,6 +24,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.Object;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.file.FileAlreadyExistsException;
@@ -59,34 +57,38 @@ public class MessageNew implements IResponseHandler {
 
     private final Random random = new Random();
 
+    String keyboard = "[ \\n      [{ \\n        \\\"action\\\": { \\n          \\\"type\\\": \\\"text\\\", \\n          \\\"payload\\\": \\\"{\\\\\\\"button\\\\\\\": \\\\\\\"1\\\\\\\"}\\\", \\n          \\\"label\\\": \\\"Red\\\" \\n        }, \\n        \\\"color\\\": \\\"negative\\\" \\n      }, \\n     { \\n        \\\"action\\\": { \\n          \\\"type\\\": \\\"text\\\", \\n          \\\"payload\\\": \\\"{\\\\\\\"button\\\\\\\": \\\\\\\"2\\\\\\\"}\\\", \\n          \\\"label\\\": \\\"Green\\\" \\n        }, \\n        \\\"color\\\": \\\"positive\\\" \\n      }], \\n      [{ \\n        \\\"action\\\": { \\n          \\\"type\\\": \\\"text\\\", \\n          \\\"payload\\\": \\\"{\\\\\\\"button\\\\\\\": \\\\\\\"3\\\\\\\"}\\\", \\n          \\\"label\\\": \\\"White\\\" \\n        }, \\n        \\\"color\\\": \\\"default\\\" \\n      }, \\n     { \\n        \\\"action\\\": { \\n          \\\"type\\\": \\\"text\\\", \\n          \\\"payload\\\": \\\"{\\\\\\\"button\\\\\\\": \\\\\\\"4\\\\\\\"}\\\", \\n          \\\"label\\\": \\\"Blue\\\" \\n        }, \\n        \\\"color\\\": \\\"primary\\\" \\n      }] \\n    ] ";
+
     public void handle(JsonObject jsonObject, GroupActor groupActor) throws Exception {
 
         ModelMessageNew message = parseJsonIntoModelMessageNew(jsonObject);
-        int userIdThatSendTheMessage = message.getInfo().getFrom_id();
+        int userIdThatSendTheMessage = message.getObject().getFrom_id();
 
         if (userIdThatSendTheMessage == ALEXANDER_BOLDYREV_VKID) {
            adminTool.handleMessageNewAsAdmin(jsonObject);
         }
 
+
         List<String> photoNames = getPhotoNames(jsonObject, constants.getUserPhotoFolderPath(), constants.getIndexPath(), NUMBER_OF_PHOTOS_IN_THE_MESSAGE);
-        System.out.println("1");
-        List<String> photoNamesAudio = getPhotoNames(jsonObject, constants.getUserPhotoFolderPathAudio(), constants.getIndexPathAudio(), 1);
-        System.out.println("2");
-        List<String> photoNamesAudioCommerce = getPhotoNames(jsonObject, constants.getUserPhotoFolderPathAudioCommerce(), constants.getIndexPathAudioCommerce(), 1);
-        System.out.println("3");
-        List<PhotoAudio> photoAudios;
-        List<PhotoAudio> photoAudiosCommerce;
+
+        List<String> photoNameForChoosingAudioForAttachment = getPhotoNames(jsonObject, constants.getUserPhotoFolderPathAudio(),
+                constants.getIndexPathAudio(), 1);
+        List<String> photoNameForChoosingCommerceAudioForAttachment = getPhotoNames(jsonObject, constants.getUserPhotoFolderPathAudioCommerce(),
+                constants.getIndexPathAudioCommerce(), 1);
+
         List<String> audioNamesFromAlbum = new ArrayList<>();
         List<String> audioNamesFromAlbumCommerce = new ArrayList<>();
-        if (!photoNamesAudio.isEmpty()) {
-            photoAudios = photoAudioRepository.findByPhotoName(photoNamesAudio.get(0));
+
+
+        if (!photoNameForChoosingAudioForAttachment.isEmpty()) {
+            List<PhotoAudio> photoAudios = photoAudioRepository.findByPhotoName(photoNameForChoosingAudioForAttachment.get(0));
             for (PhotoAudio photoAudio : photoAudios) {
                 audioNamesFromAlbum.add(photoAudio.getAudioName());
             }
         }
 
-        if (!photoNamesAudioCommerce.isEmpty()) {
-            photoAudiosCommerce = photoAudioRepository.findByPhotoName(photoNamesAudioCommerce.get(0));
+        if (!photoNameForChoosingCommerceAudioForAttachment.isEmpty()) {
+            List<PhotoAudio> photoAudiosCommerce = photoAudioRepository.findByPhotoName(photoNameForChoosingCommerceAudioForAttachment.get(0));
             for (PhotoAudio photoAudio : photoAudiosCommerce) {
                 audioNamesFromAlbumCommerce.add(photoAudio.getAudioName());
             }
@@ -108,7 +110,14 @@ public class MessageNew implements IResponseHandler {
 
             } else {
                 apiClient.messages().send(groupActor).userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(audioNamesFromAlbum.get(random.nextInt(audioNamesFromAlbum.size()))).execute();
+
             }
+
+        }
+
+        if (!isAttachmentExists(jsonObject)) {
+            apiClient.messages().send(groupActor).message("Прости, меня не научили читать текст. Пришли картинку, пожалуйста! )")
+                    .userId(userIdThatSendTheMessage).randomId(random.nextInt()).unsafeParam("keyboard", keyboard).execute();
 
         }
     }
@@ -180,8 +189,8 @@ public class MessageNew implements IResponseHandler {
 
         List<Item> items = parser.getResponse().getItems();
         for (Item item: items) {
-            List<com.vk.parser.Attachment> audioAttachments = item.getAttachments();
-            for (com.vk.parser.Attachment attachment: audioAttachments) {
+            List<Attachment> audioAttachments = item.getAttachments();
+            for (Attachment attachment: audioAttachments) {
 
                 Audio audio = attachment.getAudio();
                 if (audio == null) {
@@ -221,7 +230,7 @@ public class MessageNew implements IResponseHandler {
             LinkedTreeMap<String, Object> stringObjectLinkedTreeMap = sizes.get(sizes.size() - 1);
             String url = (String) stringObjectLinkedTreeMap.get("url");
 
-            senderUserId = message.getInfo().getFrom_id();
+            senderUserId = message.getObject().getFrom_id();
 
             idList = listOfIdFromSearch(url, senderUserId, userPhotoFolderPath, reIndex);
 

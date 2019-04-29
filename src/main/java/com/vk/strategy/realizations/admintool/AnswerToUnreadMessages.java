@@ -37,9 +37,15 @@ public class AnswerToUnreadMessages  implements  AdminToolResponseHandler  {
         String s = apiClient.messages().getDialogs(groupActor).unanswered1(true).executeAsString();
         Parser parser = gson.fromJson(s, Parser.class);
         List<Item> items = parser.getResponse().getItems();
+        int countOfMessages = 0;
         for (Item item : items) {
             int userId = item.getMessage().getUser_id();
             apiClient.messages().send(groupActor).message(MESSAGE_TO_USER).userId(userId).randomId(random.nextInt()).execute();
+            countOfMessages++;
+            if (countOfMessages == 19) {
+                Thread.sleep(3000);
+                countOfMessages = 0;
+            }
         }
     }
 }
