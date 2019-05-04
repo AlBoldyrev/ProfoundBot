@@ -34,7 +34,7 @@ public class AnswerToUnreadMessages  implements  AdminToolResponseHandler  {
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
 
-        String s = apiClient.messages().getDialogs(groupActor).unanswered1(true).executeAsString();
+       /* String s = apiClient.messages().getConversations(groupActor).unanswered1(true).executeAsString();
         Parser parser = gson.fromJson(s, Parser.class);
         List<Item> items = parser.getResponse().getItems();
         int countOfMessages = 0;
@@ -46,6 +46,6 @@ public class AnswerToUnreadMessages  implements  AdminToolResponseHandler  {
                 Thread.sleep(3000);
                 countOfMessages = 0;
             }
-        }
+        }*/
     }
 }

@@ -29,10 +29,11 @@ public class ApplicationStartup implements ApplicationListener<ApplicationReadyE
     public void onApplicationEvent(final ApplicationReadyEvent event) {
 
         try {
-            if (!vk.groups().getLongPollSettings(groupActor).execute().isEnabled()) {
-                vk.groups().setLongPollSettings(groupActor).enabled(true).wallPostNew(true).execute();
-                vk.groups().setLongPollSettings(groupActor).enabled(true).messageNew(true).execute();
-            }
+//            if (!vk.groups().getLongPollSettings(groupActor).execute().isEnabled()) {
+//                vk.groups().setLongPollSettings(groupActor).enabled(true).wallPostNew(true).execute();
+//                vk.groups().setLongPollSettings(groupActor).enabled(true).messageNew(true).execute();
+//            }
+            vk.groups().setLongPollSettings(groupActor, groupActor.getGroupId()).enabled(true).messageNew(true).execute();
         } catch (ApiException | ClientException e) {
             e.printStackTrace();
         }

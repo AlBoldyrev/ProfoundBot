@@ -9,12 +9,19 @@ import com.google.gson.reflect.TypeToken;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.client.actors.UserActor;
+import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
+import com.vk.api.sdk.objects.base.UserGroupFields;
+import com.vk.api.sdk.objects.users.Fields;
+import com.vk.api.sdk.queries.Field;
 import com.vk.application.IResponseHandler;
 import com.vk.constants.Constants;
 import com.vk.entities.PhotoAudio;
 import com.vk.parser.*;
 import com.vk.lirestaff.IndexSearcher;
+import com.vk.parser.messageNew.EventParser;
+import com.vk.parser.userInfoParser.Response;
+import com.vk.parser.userInfoParser.UserInfoParser;
 import com.vk.repository.PhotoAudioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -62,12 +69,25 @@ public class MessageNew implements IResponseHandler {
     public void handle(JsonObject jsonObject, GroupActor groupActor) throws Exception {
 
         ModelMessageNew message = parseJsonIntoModelMessageNew(jsonObject);
-        int userIdThatSendTheMessage = message.getObject().getFrom_id();
+        int userIdThatSendTheMessage = message.getObject().getUserId();
+        String userDomain = getUserDomain(groupActor, userIdThatSendTheMessage);
 
         if (userIdThatSendTheMessage == ALEXANDER_BOLDYREV_VKID) {
            adminTool.handleMessageNewAsAdmin(jsonObject);
         }
 
+        if (isAttachmentExists(jsonObject)) {
+            actionIfAttachmentExist(jsonObject, groupActor, userIdThatSendTheMessage);
+        } else {
+            apiClient.messages().send(groupActor).peerId(userIdThatSendTheMessage).userIds(userIdThatSendTheMessage).randomId(random.nextInt())
+                    .domain(userDomain).message("Прости, меня не научили читать текст. Пришли картинку, пожалуйста!").execute();
+        }
+    }
+
+
+    private void actionIfAttachmentExist(JsonObject jsonObject, GroupActor groupActor, int userId) throws IOException, ClientException, ApiException {
+
+        String userDomain = getUserDomain(groupActor, userId);
 
         List<String> photoNames = getPhotoNames(jsonObject, constants.getUserPhotoFolderPath(), constants.getIndexPath(), NUMBER_OF_PHOTOS_IN_THE_MESSAGE);
 
@@ -93,9 +113,13 @@ public class MessageNew implements IResponseHandler {
                 audioNamesFromAlbumCommerce.add(photoAudio.getAudioName());
             }
         }
+        
+        String s1 = photoNames.toString();
+        String s3 = s1.substring(1, s1.length()-1);
+        s3 = s3.replaceAll("\\s","");
 
         if (isAttachmentExists(jsonObject)) {
-            apiClient.messages().send(groupActor).userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(photoNames).execute();
+            apiClient.messages().send(groupActor).peerId(userId).userIds(userId).randomId(random.nextInt()).domain(userDomain).attachment(s3).execute();
         }
 
         if (!audioNamesFromAlbum.isEmpty()) {
@@ -103,25 +127,34 @@ public class MessageNew implements IResponseHandler {
             if (!audioNamesFromAlbumCommerce.isEmpty()) {
 
                 if (random.nextBoolean()) {
-                    apiClient.messages().send(groupActor).userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(audioNamesFromAlbum.get(random.nextInt(audioNamesFromAlbum.size()))).execute();
+                    apiClient.messages().send(groupActor).peerId(userId).userIds(userId).randomId(random.nextInt())
+                            .domain(userDomain).attachment(audioNamesFromAlbum.get(random.nextInt(audioNamesFromAlbum.size()))).execute();
                 } else {
-                    apiClient.messages().send(groupActor).userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(audioNamesFromAlbumCommerce.get(random.nextInt(audioNamesFromAlbumCommerce.size()))).execute();
+                    apiClient.messages().send(groupActor).peerId(userId).userIds(userId).randomId(random.nextInt())
+                            .domain(userDomain).attachment(audioNamesFromAlbumCommerce.get(random.nextInt(audioNamesFromAlbumCommerce.size()))).execute();
                 }
 
             } else {
-                apiClient.messages().send(groupActor).userId(userIdThatSendTheMessage).randomId(random.nextInt()).attachment(audioNamesFromAlbum.get(random.nextInt(audioNamesFromAlbum.size()))).execute();
+                apiClient.messages().send(groupActor).peerId(userId).userIds(userId).randomId(random.nextInt())
+                        .domain(userDomain).attachment(audioNamesFromAlbum.get(random.nextInt(audioNamesFromAlbum.size()))).execute();
 
             }
-
-        }
-
-        if (!isAttachmentExists(jsonObject)) {
-            apiClient.messages().send(groupActor).message("Прости, меня не научили читать текст. Пришли картинку, пожалуйста! )")
-                    .userId(userIdThatSendTheMessage).randomId(random.nextInt()).unsafeParam("keyboard", keyboard).execute();
-
         }
     }
 
+    private String getUserDomain(GroupActor groupActor, int userId) throws ClientException {
+
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+
+        String s = apiClient.users().get(groupActor).userIds(String.valueOf(userId)).fields(Fields.DOMAIN).executeAsString();
+        UserInfoParser userInfoParser = gson.fromJson(s, UserInfoParser.class);
+        List<Response> response = userInfoParser.getResponses();
+        String userDomain = response.get(0).getDomain();
+
+        return userDomain;
+
+    }
     private ArrayList<String> listOfIdFromSearch(String URL, int userId, String userPhotoFolderPath, String reIndex) throws IOException {
 
         IndexSearcher indexSearcher = null;
@@ -225,12 +258,8 @@ public class MessageNew implements IResponseHandler {
 
             LinkedTreeMap<String, Object> messageTypeValue;
             messageTypeValue = (LinkedTreeMap<String, Object>) treeMaps.get("photo");
-
-            ArrayList<LinkedTreeMap<String,Object>> sizes = (ArrayList<LinkedTreeMap<String,Object>>) messageTypeValue.get("sizes");
-            LinkedTreeMap<String, Object> stringObjectLinkedTreeMap = sizes.get(sizes.size() - 1);
-            String url = (String) stringObjectLinkedTreeMap.get("url");
-
-            senderUserId = message.getObject().getFrom_id();
+            String url = messageTypeValue.get("photo_604").toString();
+            senderUserId = message.getObject().getUserId();
 
             idList = listOfIdFromSearch(url, senderUserId, userPhotoFolderPath, reIndex);
 
@@ -261,13 +290,21 @@ public class MessageNew implements IResponseHandler {
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
 
+        boolean isAttachemetExists;
+
         Type type = new TypeToken<Map<String, Object>>(){}.getType();
         Map<String, Object> myMap = gson.fromJson(jsonObject, type);
         LinkedTreeMap<String, Object> object;
         object = (LinkedTreeMap<String,Object>)myMap.get("object");
 
         ArrayList<LinkedTreeMap<String,Object>> attachments = (ArrayList<LinkedTreeMap<String,Object>>) object.get("attachments");
-        return !attachments.isEmpty();
+        if (attachments == null || attachments.isEmpty()) {
+            isAttachemetExists = false;
+        } else {
+            isAttachemetExists = true;
+        }
+
+        return isAttachemetExists;
     }
 
      ModelMessageNew parseJsonIntoModelMessageNew(JsonObject jsonObject) {

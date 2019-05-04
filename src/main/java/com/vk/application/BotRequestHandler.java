@@ -5,10 +5,8 @@ import com.vk.api.sdk.callback.longpoll.responses.GetLongPollEventsResponse;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.client.actors.UserActor;
-import com.vk.api.sdk.exceptions.ApiException;
-import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.exceptions.LongPollServerKeyExpiredException;
-import com.vk.api.sdk.objects.groups.responses.GetLongPollServerResponse;
+import com.vk.api.sdk.objects.responses.GetLongPollServerResponse;
 import com.vk.strategy.realizations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,10 +62,14 @@ class BotRequestHandler {
         strategyHandlers.put("message_allow", messageAllow);
         strategyHandlers.put("message_typing_state", messageTypingState);
 
-        GetLongPollServerResponse longPollServer = getLongPollServer();
+//        GetLongPollServerResponse longPollServer = apiClient.groupsLongPoll().getLongPollServer(groupActor);
+//
+        GetLongPollServerResponse longPollServer = apiClient.groupsLongPoll().getLongPollServer(groupActor).execute();
         int lastTimeStamp = longPollServer.getTs();
 
+
         while (true) try {
+//            apiClient.longPoll().getEvents();
             GetLongPollEventsResponse eventsResponse = apiClient.longPoll().getEvents(longPollServer.getServer(), longPollServer.getKey(), lastTimeStamp).waitTime(waitTime).execute();
             for (JsonObject jsonObject : eventsResponse.getUpdates()) {
                 String type = jsonObject.get("type").getAsString();
@@ -84,16 +86,8 @@ class BotRequestHandler {
             }
             lastTimeStamp = eventsResponse.getTs();
         } catch (LongPollServerKeyExpiredException e) {
-            longPollServer = getLongPollServer();
+            longPollServer = apiClient.groupsLongPoll().getLongPollServer(groupActor).execute();;
             LOG.info(longPollServer.toString());
         }
-    }
-
-    private GetLongPollServerResponse getLongPollServer() throws ClientException, ApiException {
-        if (groupActor != null) {
-            return apiClient.groups().getLongPollServer(groupActor).execute();
-        }
-
-        return apiClient.groups().getLongPollServer(userActor, groupActor.getGroupId()).execute();
     }
 }

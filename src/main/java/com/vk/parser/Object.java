@@ -1,25 +1,30 @@
 package com.vk.parser;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
 public class Object {
 
     private int date;
-    private int from_id;
+    @SerializedName("from_id")
+    private int fromId;
     private int id;
     private int out;
-    private int peer_id;
+    @SerializedName("peerId")
+    private int peerId;
     private String text;
-    private int conversation_message_id;
+    @SerializedName("conversation_message_id")
+    private int conversationMessageId;
     private List<Message> messages;
     private boolean important;
-    private int random_id;
+    @SerializedName("random_id")
+    private int randomId;
     private List<com.vk.parser.Attachment> attachments;
-    private boolean is_hidden;
-
-    public int getFromId() {
-        return from_id;
-    }
+    @SerializedName("isHidden")
+    private boolean isHidden;
+    @SerializedName("user_id")
+    private int userId;
 
     public int getDate() {
         return date;
@@ -29,12 +34,12 @@ public class Object {
         this.date = date;
     }
 
-    public int getFrom_id() {
-        return from_id;
+    public int getFromId() {
+        return fromId;
     }
 
-    public void setFrom_id(int from_id) {
-        this.from_id = from_id;
+    public void setFromId(int fromId) {
+        this.fromId = fromId;
     }
 
     public int getId() {
@@ -53,12 +58,12 @@ public class Object {
         this.out = out;
     }
 
-    public int getPeer_id() {
-        return peer_id;
+    public int getPeerId() {
+        return peerId;
     }
 
-    public void setPeer_id(int peer_id) {
-        this.peer_id = peer_id;
+    public void setPeerId(int peerId) {
+        this.peerId = peerId;
     }
 
     public String getText() {
@@ -69,12 +74,16 @@ public class Object {
         this.text = text;
     }
 
-    public int getConversation_message_id() {
-        return conversation_message_id;
+    public int getConversationMessageId() {
+        return conversationMessageId;
     }
 
-    public void setConversation_message_id(int conversation_message_id) {
-        this.conversation_message_id = conversation_message_id;
+    public void setConversationMessageId(int conversationMessageId) {
+        this.conversationMessageId = conversationMessageId;
+    }
+
+    public List<Message> getMessages() {
+        return messages;
     }
 
     public void setMessages(List<Message> messages) {
@@ -89,32 +98,35 @@ public class Object {
         this.important = important;
     }
 
-    public int getRandom_id() {
-        return random_id;
+    public int getRandomId() {
+        return randomId;
     }
 
-    public void setRandom_id(int random_id) {
-        this.random_id = random_id;
+    public void setRandomId(int randomId) {
+        this.randomId = randomId;
     }
 
+    public List<Attachment> getAttachments() {
+        return attachments;
+    }
 
     public void setAttachments(List<Attachment> attachments) {
         this.attachments = attachments;
     }
 
-    public boolean isIs_hidden() {
-        return is_hidden;
+    public boolean isHidden() {
+        return isHidden;
     }
 
-    public void setIs_hidden(boolean is_hidden) {
-        this.is_hidden = is_hidden;
+    public void setHidden(boolean hidden) {
+        isHidden = hidden;
     }
 
-    public List<Message> getMessages() {
-        return messages;
+    public int getUserId() {
+        return userId;
     }
 
-    public List<Attachment> getAttachments() {
-        return attachments;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 }
