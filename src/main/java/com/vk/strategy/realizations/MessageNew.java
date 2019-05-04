@@ -12,6 +12,7 @@ import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.base.UserGroupFields;
+import com.vk.api.sdk.objects.messages.Keyboard;
 import com.vk.api.sdk.objects.users.Fields;
 import com.vk.api.sdk.queries.Field;
 import com.vk.application.IResponseHandler;
@@ -64,13 +65,16 @@ public class MessageNew implements IResponseHandler {
 
     private final Random random = new Random();
 
-    String keyboard = "[ \\n      [{ \\n        \\\"action\\\": { \\n          \\\"type\\\": \\\"text\\\", \\n          \\\"payload\\\": \\\"{\\\\\\\"button\\\\\\\": \\\\\\\"1\\\\\\\"}\\\", \\n          \\\"label\\\": \\\"Red\\\" \\n        }, \\n        \\\"color\\\": \\\"negative\\\" \\n      }, \\n     { \\n        \\\"action\\\": { \\n          \\\"type\\\": \\\"text\\\", \\n          \\\"payload\\\": \\\"{\\\\\\\"button\\\\\\\": \\\\\\\"2\\\\\\\"}\\\", \\n          \\\"label\\\": \\\"Green\\\" \\n        }, \\n        \\\"color\\\": \\\"positive\\\" \\n      }], \\n      [{ \\n        \\\"action\\\": { \\n          \\\"type\\\": \\\"text\\\", \\n          \\\"payload\\\": \\\"{\\\\\\\"button\\\\\\\": \\\\\\\"3\\\\\\\"}\\\", \\n          \\\"label\\\": \\\"White\\\" \\n        }, \\n        \\\"color\\\": \\\"default\\\" \\n      }, \\n     { \\n        \\\"action\\\": { \\n          \\\"type\\\": \\\"text\\\", \\n          \\\"payload\\\": \\\"{\\\\\\\"button\\\\\\\": \\\\\\\"4\\\\\\\"}\\\", \\n          \\\"label\\\": \\\"Blue\\\" \\n        }, \\n        \\\"color\\\": \\\"primary\\\" \\n      }] \\n    ] ";
+    public static final String keyB =            "{ \"one_time\": true, \"buttons\": " +
+            "                    [[{ \"action\": { \"type\": \"text\", \"payload\": \"{\\\"button\\\": \\\"3\\\"}\", \"label\": \"Подробнее о музыканте\" }, \"color\": \"default\" }] ] } ";
+            Keyboard keyboard2 = new Keyboard();
 
     public void handle(JsonObject jsonObject, GroupActor groupActor) throws Exception {
 
         ModelMessageNew message = parseJsonIntoModelMessageNew(jsonObject);
         int userIdThatSendTheMessage = message.getObject().getUserId();
         String userDomain = getUserDomain(groupActor, userIdThatSendTheMessage);
+
 
         if (userIdThatSendTheMessage == ALEXANDER_BOLDYREV_VKID) {
            adminTool.handleMessageNewAsAdmin(jsonObject);
@@ -80,7 +84,7 @@ public class MessageNew implements IResponseHandler {
             actionIfAttachmentExist(jsonObject, groupActor, userIdThatSendTheMessage);
         } else {
             apiClient.messages().send(groupActor).peerId(userIdThatSendTheMessage).userIds(userIdThatSendTheMessage).randomId(random.nextInt())
-                    .domain(userDomain).message("Прости, меня не научили читать текст. Пришли картинку, пожалуйста!").execute();
+                    .domain(userDomain).message("Прости, меня не научили читать текст. Пришли картинку, пожалуйста!").unsafeParam("keyboard" , keyB).execute();
         }
     }
 
@@ -113,7 +117,7 @@ public class MessageNew implements IResponseHandler {
                 audioNamesFromAlbumCommerce.add(photoAudio.getAudioName());
             }
         }
-        
+
         String s1 = photoNames.toString();
         String s3 = s1.substring(1, s1.length()-1);
         s3 = s3.replaceAll("\\s","");
