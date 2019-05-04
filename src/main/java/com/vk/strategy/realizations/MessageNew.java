@@ -18,12 +18,14 @@ import com.vk.api.sdk.queries.Field;
 import com.vk.application.IResponseHandler;
 import com.vk.constants.Constants;
 import com.vk.entities.PhotoAudio;
+import com.vk.lirestaff.ListOfPhotosGetter;
 import com.vk.parser.*;
 import com.vk.lirestaff.IndexSearcher;
 import com.vk.parser.messageNew.EventParser;
 import com.vk.parser.userInfoParser.Response;
 import com.vk.parser.userInfoParser.UserInfoParser;
 import com.vk.repository.PhotoAudioRepository;
+import com.vk.util.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -63,9 +65,15 @@ public class MessageNew implements IResponseHandler {
     @Autowired
     private PhotoAudioRepository photoAudioRepository;
 
+    @Autowired
+    private ListOfPhotosGetter listOfPhotosGetter;
+
+    @Autowired
+    private UserInfo userInfo;
+
     private final Random random = new Random();
 
-    public static final String keyB =            "{ \"one_time\": true, \"buttons\": " +
+    private static final String keyB = "{ \"one_time\": true, \"buttons\": " +
             "                    [[{ \"action\": { \"type\": \"text\", \"payload\": \"{\\\"button\\\": \\\"3\\\"}\", \"label\": \"Подробнее о музыканте\" }, \"color\": \"default\" }] ] } ";
             Keyboard keyboard2 = new Keyboard();
 
@@ -73,7 +81,7 @@ public class MessageNew implements IResponseHandler {
 
         ModelMessageNew message = parseJsonIntoModelMessageNew(jsonObject);
         int userIdThatSendTheMessage = message.getObject().getUserId();
-        String userDomain = getUserDomain(groupActor, userIdThatSendTheMessage);
+        String userDomain = userInfo.getUserDomain(groupActor, userIdThatSendTheMessage);
 
 
         if (userIdThatSendTheMessage == ALEXANDER_BOLDYREV_VKID) {
@@ -91,7 +99,7 @@ public class MessageNew implements IResponseHandler {
 
     private void actionIfAttachmentExist(JsonObject jsonObject, GroupActor groupActor, int userId) throws IOException, ClientException, ApiException {
 
-        String userDomain = getUserDomain(groupActor, userId);
+        String userDomain = userInfo.getUserDomain(groupActor, userId);
 
         List<String> photoNames = getPhotoNames(jsonObject, constants.getUserPhotoFolderPath(), constants.getIndexPath(), NUMBER_OF_PHOTOS_IN_THE_MESSAGE);
 
@@ -146,72 +154,8 @@ public class MessageNew implements IResponseHandler {
         }
     }
 
-    private String getUserDomain(GroupActor groupActor, int userId) throws ClientException {
 
-        GsonBuilder builder = new GsonBuilder();
-        Gson gson = builder.create();
 
-        String s = apiClient.users().get(groupActor).userIds(String.valueOf(userId)).fields(Fields.DOMAIN).executeAsString();
-        UserInfoParser userInfoParser = gson.fromJson(s, UserInfoParser.class);
-        List<Response> response = userInfoParser.getResponses();
-        String userDomain = response.get(0).getDomain();
-
-        return userDomain;
-
-    }
-    private ArrayList<String> listOfIdFromSearch(String URL, int userId, String userPhotoFolderPath, String reIndex) throws IOException {
-
-        IndexSearcher indexSearcher = null;
-        File userFile;
-        BufferedImage img;
-        String fileName;
-
-        File folder = new File(userPhotoFolderPath + userId);
-        if (!folder.exists()) {
-            boolean isFolderCreated = folder.mkdir();
-        }
-
-        try(InputStream in = new URL(URL).openStream()){
-            try {
-                Files.copy(in, Paths.get(userPhotoFolderPath + userId + "\\" + userId + "&1.png"));
-            } catch (FileAlreadyExistsException faee) {
-            }
-        }
-
-        File[] files = new File(userPhotoFolderPath + userId).listFiles();
-
-        for (File file : files) {
-            if (file.isFile()) {
-                boolean isFileDeleted = file.delete();
-            }
-            fileName = userPhotoFolderPath + userId + "\\" + userId + "&1.png";
-            img = ImageIO.read(new URL(URL));
-            userFile = new File(fileName);
-
-            if (!userFile.exists()) {
-                boolean isFileCreated = userFile.createNewFile();
-            }
-
-            if (img != null) {
-                ImageIO.write(img, "png", userFile);
-            } else {
-                return new ArrayList<>();
-            }
-
-            if (userFile.exists()) {
-                indexSearcher = new IndexSearcher(fileName, reIndex);
-            } else {
-                return new ArrayList<>();
-            }
-        }
-        if (null != indexSearcher) {
-            System.out.println("IndexSearcher worked well :) ");
-            return new ArrayList<>(indexSearcher.getIdList());
-        } else {
-            System.out.println("IndexSearcher is null :( ");
-            return new ArrayList<>();
-        }
-    }
 
     private List<String> getAudioNames() throws ClientException {
 
@@ -265,7 +209,7 @@ public class MessageNew implements IResponseHandler {
             String url = messageTypeValue.get("photo_604").toString();
             senderUserId = message.getObject().getUserId();
 
-            idList = listOfIdFromSearch(url, senderUserId, userPhotoFolderPath, reIndex);
+            idList = listOfPhotosGetter.listOfIdFromSearch(url, senderUserId, userPhotoFolderPath, reIndex);
 
         }
 

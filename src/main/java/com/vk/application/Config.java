@@ -6,9 +6,11 @@ import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.constants.Constants;
+import com.vk.lirestaff.ListOfPhotosGetter;
 import com.vk.strategy.realizations.*;
 import com.vk.strategy.realizations.admintool.*;
 import com.vk.util.PhotoDownloader;
+import com.vk.util.UserInfo;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -92,6 +94,12 @@ public class Config {
 
     @Bean
     AnswerToUnreadMessages answerToUnreadMessages() {return  new AnswerToUnreadMessages();}
+
+    @Bean
+    ListOfPhotosGetter listOfPhotosGetter() {return new ListOfPhotosGetter();}
+
+    @Bean
+    UserInfo userInfo() {return new UserInfo();}
 
     @Bean
     Constants constants(Properties properties) {
