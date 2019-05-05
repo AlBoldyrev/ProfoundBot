@@ -11,35 +11,21 @@ import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
-import com.vk.api.sdk.objects.base.UserGroupFields;
 import com.vk.api.sdk.objects.messages.Keyboard;
-import com.vk.api.sdk.objects.users.Fields;
-import com.vk.api.sdk.queries.Field;
 import com.vk.application.IResponseHandler;
 import com.vk.constants.Constants;
 import com.vk.entities.PhotoAudio;
 import com.vk.lirestaff.ListOfPhotosGetter;
 import com.vk.parser.*;
-import com.vk.lirestaff.IndexSearcher;
-import com.vk.parser.messageNew.EventParser;
-import com.vk.parser.userInfoParser.Response;
-import com.vk.parser.userInfoParser.UserInfoParser;
 import com.vk.repository.PhotoAudioRepository;
+import com.vk.util.MessageSender;
 import com.vk.util.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.Object;
 import java.lang.reflect.Type;
-import java.net.URL;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,10 +57,14 @@ public class MessageNew implements IResponseHandler {
     @Autowired
     private UserInfo userInfo;
 
+    @Autowired
+    private MessageSender messageSender;
+
     private final Random random = new Random();
 
-    private static final String keyB = "{ \"one_time\": true, \"buttons\": " +
-            "                    [[{ \"action\": { \"type\": \"text\", \"payload\": \"{\\\"button\\\": \\\"3\\\"}\", \"label\": \"Подробнее о музыканте\" }, \"color\": \"default\" }] ] } ";
+    private static final String keyboard = "{ \"one_time\": true, \"buttons\": " +
+            "[[{ \"action\": { \"type\": \"text\", \"payload\": \"{\\\"button\\\": \\\"3\\\"}\", " +
+            "\"label\": \"Подробнее о музыканте\" }, \"color\": \"default\" }] ] } ";
             Keyboard keyboard2 = new Keyboard();
 
     public void handle(JsonObject jsonObject, GroupActor groupActor) throws Exception {
@@ -92,30 +82,40 @@ public class MessageNew implements IResponseHandler {
             actionIfAttachmentExist(jsonObject, groupActor, userIdThatSendTheMessage);
         } else {
             apiClient.messages().send(groupActor).peerId(userIdThatSendTheMessage).userIds(userIdThatSendTheMessage).randomId(random.nextInt())
-                    .domain(userDomain).message("Прости, меня не научили читать текст. Пришли картинку, пожалуйста!").unsafeParam("keyboard" , keyB).execute();
+                    .domain(userDomain).message("Прости, меня не научили читать текст. Пришли картинку, пожалуйста!").execute();
         }
     }
 
 
     private void actionIfAttachmentExist(JsonObject jsonObject, GroupActor groupActor, int userId) throws IOException, ClientException, ApiException {
 
-        String userDomain = userInfo.getUserDomain(groupActor, userId);
+        //-----------------------------------------------
+        //Part for 10 photos
 
         List<String> photoNames = getPhotoNames(jsonObject, constants.getUserPhotoFolderPath(), constants.getIndexPath(), NUMBER_OF_PHOTOS_IN_THE_MESSAGE);
+
+        String photoNamesString = photoNames.toString();
+        String photoNamesWithoutSquareBracketsAndWhitespaces = photoNamesString.substring(1, photoNamesString.length()-1)
+                .replaceAll("\\s","");
+
+        //------------------------------------------------
+        //Part for audioToSet
 
         List<String> photoNameForChoosingAudioForAttachment = getPhotoNames(jsonObject, constants.getUserPhotoFolderPathAudio(),
                 constants.getIndexPathAudio(), 1);
         List<String> photoNameForChoosingCommerceAudioForAttachment = getPhotoNames(jsonObject, constants.getUserPhotoFolderPathAudioCommerce(),
                 constants.getIndexPathAudioCommerce(), 1);
 
-        List<String> audioNamesFromAlbum = new ArrayList<>();
+        List<String> audioNamesFromAlbumNonCommerce = new ArrayList<>();
         List<String> audioNamesFromAlbumCommerce = new ArrayList<>();
 
+        //------------------------------------------------
+        //Part for checking if audio is found
 
         if (!photoNameForChoosingAudioForAttachment.isEmpty()) {
             List<PhotoAudio> photoAudios = photoAudioRepository.findByPhotoName(photoNameForChoosingAudioForAttachment.get(0));
             for (PhotoAudio photoAudio : photoAudios) {
-                audioNamesFromAlbum.add(photoAudio.getAudioName());
+                audioNamesFromAlbumNonCommerce.add(photoAudio.getAudioName());
             }
         }
 
@@ -126,36 +126,27 @@ public class MessageNew implements IResponseHandler {
             }
         }
 
-        String s1 = photoNames.toString();
-        String s3 = s1.substring(1, s1.length()-1);
-        s3 = s3.replaceAll("\\s","");
+        String attachmentsNonCommerce = audioNamesFromAlbumNonCommerce.get(random.nextInt(audioNamesFromAlbumNonCommerce.size()));
+        String attachmentsCommerce = audioNamesFromAlbumCommerce.get(random.nextInt(audioNamesFromAlbumCommerce.size()));
 
-        if (isAttachmentExists(jsonObject)) {
-            apiClient.messages().send(groupActor).peerId(userId).userIds(userId).randomId(random.nextInt()).domain(userDomain).attachment(s3).execute();
-        }
 
-        if (!audioNamesFromAlbum.isEmpty()) {
+        //---------------------------------------------------
+        //Part for sending correct message
 
+        messageSender.sendMessageWithAttachmentsOnly(userId, photoNamesWithoutSquareBracketsAndWhitespaces);
+
+        if (!audioNamesFromAlbumNonCommerce.isEmpty()) {
             if (!audioNamesFromAlbumCommerce.isEmpty()) {
-
                 if (random.nextBoolean()) {
-                    apiClient.messages().send(groupActor).peerId(userId).userIds(userId).randomId(random.nextInt())
-                            .domain(userDomain).attachment(audioNamesFromAlbum.get(random.nextInt(audioNamesFromAlbum.size()))).execute();
+                    messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
                 } else {
-                    apiClient.messages().send(groupActor).peerId(userId).userIds(userId).randomId(random.nextInt())
-                            .domain(userDomain).attachment(audioNamesFromAlbumCommerce.get(random.nextInt(audioNamesFromAlbumCommerce.size()))).execute();
+                    messageSender.sendMessageWithAttachmentsAndKeyboard(userId, attachmentsCommerce, keyboard);
                 }
-
             } else {
-                apiClient.messages().send(groupActor).peerId(userId).userIds(userId).randomId(random.nextInt())
-                        .domain(userDomain).attachment(audioNamesFromAlbum.get(random.nextInt(audioNamesFromAlbum.size()))).execute();
-
+                messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
             }
         }
     }
-
-
-
 
     private List<String> getAudioNames() throws ClientException {
 

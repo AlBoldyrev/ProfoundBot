@@ -9,6 +9,7 @@ import com.vk.constants.Constants;
 import com.vk.lirestaff.ListOfPhotosGetter;
 import com.vk.strategy.realizations.*;
 import com.vk.strategy.realizations.admintool.*;
+import com.vk.util.MessageSender;
 import com.vk.util.PhotoDownloader;
 import com.vk.util.UserInfo;
 import org.springframework.context.annotation.Bean;
@@ -100,6 +101,9 @@ public class Config {
 
     @Bean
     UserInfo userInfo() {return new UserInfo();}
+
+    @Bean
+    MessageSender messageSender() {return new MessageSender();}
 
     @Bean
     Constants constants(Properties properties) {
