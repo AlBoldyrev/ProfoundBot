@@ -47,7 +47,7 @@ public class AdminTool {
         strategyHandlers.put("Ответить на непрочитанные сообщения", answerToUnreadMessages);
 
         ModelMessageNew modelMessageNew = messageNew.parseJsonIntoModelMessageNew(jsonObject);
-        String messageText = modelMessageNew.getObject().getText();
+        String messageText = modelMessageNew.getObject().getBody();
 
         AdminToolResponseHandler handler = strategyHandlers.get(messageText);
         if (handler != null) {

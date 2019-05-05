@@ -17,9 +17,11 @@ import com.vk.constants.Constants;
 import com.vk.entities.PhotoAudio;
 import com.vk.lirestaff.ListOfPhotosGetter;
 import com.vk.parser.*;
+import com.vk.repository.MusicianRepository;
 import com.vk.repository.PhotoAudioRepository;
 import com.vk.util.MessageSender;
 import com.vk.util.UserInfo;
+import io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -59,6 +61,9 @@ public class MessageNew implements IResponseHandler {
 
     @Autowired
     private MessageSender messageSender;
+
+    @Autowired
+    MusicianRepository musicianRepository;
 
     private final Random random = new Random();
 
@@ -126,24 +131,49 @@ public class MessageNew implements IResponseHandler {
             }
         }
 
-        String attachmentsNonCommerce = audioNamesFromAlbumNonCommerce.get(random.nextInt(audioNamesFromAlbumNonCommerce.size()));
-        String attachmentsCommerce = audioNamesFromAlbumCommerce.get(random.nextInt(audioNamesFromAlbumCommerce.size()));
+        String attachmentsNonCommerce = StringUtil.EMPTY_STRING;
+        String attachmentsCommerce = StringUtil.EMPTY_STRING;
 
+        if (!audioNamesFromAlbumCommerce.isEmpty()) {
+            attachmentsNonCommerce = audioNamesFromAlbumNonCommerce.get(random.nextInt(audioNamesFromAlbumNonCommerce.size()));
+        }
+        if (!audioNamesFromAlbumNonCommerce.isEmpty()) {
+            attachmentsNonCommerce = audioNamesFromAlbumCommerce.get(random.nextInt(audioNamesFromAlbumCommerce.size()));
+        }
 
         //---------------------------------------------------
         //Part for sending correct message
 
-        messageSender.sendMessageWithAttachmentsOnly(userId, photoNamesWithoutSquareBracketsAndWhitespaces);
-
-        if (!audioNamesFromAlbumNonCommerce.isEmpty()) {
-            if (!audioNamesFromAlbumCommerce.isEmpty()) {
-                if (random.nextBoolean()) {
-                    messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
+        if (userId == ALEXANDER_BOLDYREV_VKID) {
+            messageSender.sendMessageTextOnly(userId, "Просто подборка, без музона:");
+            messageSender.sendMessageWithAttachmentsOnly(userId, photoNamesWithoutSquareBracketsAndWhitespaces);
+            if (!audioNamesFromAlbumNonCommerce.isEmpty()) {
+                if (!audioNamesFromAlbumCommerce.isEmpty()) {
+                    if (random.nextBoolean()) {
+                        messageSender.sendMessageTextOnly(userId, "Подборка с некоммерческим музоном (есть коммерческий):");
+                        messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
+                    } else {
+                        messageSender.sendMessageTextOnly(userId, "Подборка с коммерческим музоном (есть коммерческий) :");
+                        messageSender.sendMessageWithAttachmentsAndKeyboard(userId, attachmentsCommerce, keyboard);
+                    }
                 } else {
-                    messageSender.sendMessageWithAttachmentsAndKeyboard(userId, attachmentsCommerce, keyboard);
+                    messageSender.sendMessageTextOnly(userId, "Подборка с некоммерческим музоном (нет коммерческого) :");
+                    messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
                 }
-            } else {
-                messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
+            }
+        } else {
+            messageSender.sendMessageWithAttachmentsOnly(userId, photoNamesWithoutSquareBracketsAndWhitespaces);
+
+            if (!audioNamesFromAlbumNonCommerce.isEmpty()) {
+                if (!audioNamesFromAlbumCommerce.isEmpty()) {
+                    if (random.nextBoolean()) {
+                        messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
+                    } else {
+                        messageSender.sendMessageWithAttachmentsAndKeyboard(userId, attachmentsCommerce, keyboard);
+                    }
+                } else {
+                    messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
+                }
             }
         }
     }

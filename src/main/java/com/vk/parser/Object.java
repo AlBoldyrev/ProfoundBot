@@ -25,6 +25,7 @@ public class Object {
     private boolean isHidden;
     @SerializedName("user_id")
     private int userId;
+    private String body;
 
     public int getDate() {
         return date;
@@ -128,5 +129,13 @@ public class Object {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
     }
 }

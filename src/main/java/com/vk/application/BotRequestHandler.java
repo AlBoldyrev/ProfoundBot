@@ -8,16 +8,19 @@ import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.LongPollServerKeyExpiredException;
 import com.vk.api.sdk.objects.responses.GetLongPollServerResponse;
 import com.vk.strategy.realizations.*;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
 @Component
+@Slf4j
 class BotRequestHandler {
 
     @Autowired
@@ -35,7 +38,7 @@ class BotRequestHandler {
     @Autowired
     private MessageTypingState messageTypingState;
 
-    private static final Logger LOG = LoggerFactory.getLogger(BotRequestHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(BotRequestHandler.class);
     private static final int DEFAULT_WAIT = 10;
 
     private final VkApiClient apiClient;
@@ -62,14 +65,12 @@ class BotRequestHandler {
         strategyHandlers.put("message_allow", messageAllow);
         strategyHandlers.put("message_typing_state", messageTypingState);
 
-//        GetLongPollServerResponse longPollServer = apiClient.groupsLongPoll().getLongPollServer(groupActor);
-//
         GetLongPollServerResponse longPollServer = apiClient.groupsLongPoll().getLongPollServer(groupActor).execute();
         int lastTimeStamp = longPollServer.getTs();
 
 
         while (true) try {
-//            apiClient.longPoll().getEvents();
+
             GetLongPollEventsResponse eventsResponse = apiClient.longPoll().getEvents(longPollServer.getServer(), longPollServer.getKey(), lastTimeStamp).waitTime(waitTime).execute();
             for (JsonObject jsonObject : eventsResponse.getUpdates()) {
                 String type = jsonObject.get("type").getAsString();
@@ -79,15 +80,14 @@ class BotRequestHandler {
                 try {
                     responseHandler.handle(jsonObject, groupActor);
                 } catch (NullPointerException npe) {
-                    System.out.println("This request can not be handled right now.");
-                    npe.getMessage();
+                    log.error("This request can not be handled right now." + Arrays.toString(npe.getStackTrace()));
                 }
 
             }
             lastTimeStamp = eventsResponse.getTs();
         } catch (LongPollServerKeyExpiredException e) {
             longPollServer = apiClient.groupsLongPoll().getLongPollServer(groupActor).execute();;
-            LOG.info(longPollServer.toString());
+            log.info(longPollServer.toString());
         }
     }
 }

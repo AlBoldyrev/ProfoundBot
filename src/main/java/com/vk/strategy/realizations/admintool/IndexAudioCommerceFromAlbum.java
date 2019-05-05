@@ -4,7 +4,10 @@ import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.constants.Constants;
 import com.vk.lirestaff.Indexer;
+import com.vk.util.MessageSender;
 import com.vk.util.PhotoDownloader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +25,11 @@ public class IndexAudioCommerceFromAlbum implements  AdminToolResponseHandler {
     @Autowired
     private Constants constants;
 
+    Logger logger = LoggerFactory.getLogger(IndexAudioCommerceFromAlbum.class);
+
     public void handle() throws IOException, ClientException {
+
+        logger.info("Indexing audioCommerceAlbum is starting!");
 
         photoDownloader.downloadPhotosFromAlbum(apiClient, constants.getAlbumMusicCommerceId(),
                 constants.getGroupIdWithMinus(), constants.getPhotoFolderPathAudioCommerce());

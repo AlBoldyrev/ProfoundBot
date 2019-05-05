@@ -8,6 +8,9 @@ import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.parser.Item;
 import com.vk.parser.Parser;
+import com.vk.util.MessageSender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,13 +27,15 @@ public class AnswerToUnreadMessages  implements  AdminToolResponseHandler  {
     @Autowired
     private GroupActor groupActor;
 
+    Logger logger = LoggerFactory.getLogger(AnswerToUnreadMessages.class);
+
     private final Random random = new Random();
     private final String MESSAGE_TO_USER = "привет) у меня был небольшой технический сбой, но админы меня уже поправили\n"+
             "вроде как, я снова работаю) проверь &#128521;";
 
     public void handle() throws ClientException, ApiException, InterruptedException {
 
-
+        logger.info("Job to solve unanswered dialog is started!");
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
 

@@ -12,7 +12,10 @@ import com.vk.jsonphotoparser.PhotoParser;
 import com.vk.parser.Attachment;
 import com.vk.parser.Parser;
 import com.vk.repository.PhotoAudioRepository;
+import com.vk.util.MessageSender;
 import com.vk.util.PhotoDownloader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -39,7 +42,11 @@ public class AlbumAudioPhotoCorrelator implements  AdminToolResponseHandler {
     @Autowired
     private PhotoAudioRepository photoAudioRepository;
 
+    Logger logger = LoggerFactory.getLogger(AlbumAudioPhotoCorrelator.class);
+
     public void handle() throws ClientException {
+
+        logger.info("Album Audio And Photo Correlator is running ! ");
 
         correlateAudioAndPhotoInAlbum(constants.getAlbumMusicId());
         correlateAudioAndPhotoInAlbum(constants.getAlbumMusicCommerceId());
