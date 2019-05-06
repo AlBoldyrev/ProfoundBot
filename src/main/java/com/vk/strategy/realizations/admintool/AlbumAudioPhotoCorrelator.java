@@ -70,7 +70,7 @@ public class AlbumAudioPhotoCorrelator implements  AdminToolResponseHandler {
             for (Item item : items) {
 
                 int photoId = item.getId();
-                int photoOwnerId = item.getOwner_id();
+                int photoOwnerId = item.getOwnerId();
 
                 String photoName = "photo" + photoOwnerId + "_" + photoId;
                 String s = apiClient.photos().getComments(userActor, photoId).ownerId(constants.getGroupIdWithMinus()).count(5).executeAsString();

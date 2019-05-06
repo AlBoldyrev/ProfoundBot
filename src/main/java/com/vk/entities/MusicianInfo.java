@@ -17,6 +17,9 @@ public class MusicianInfo {
     @Column(name = "number_of_clicks")
     private Integer numberOfClicks;
 
+    @Column(name = "info")
+    private String musicianInfo;
+
     public Integer getMusicianInfoId() {
         return musicianInfoId;
     }
@@ -39,6 +42,14 @@ public class MusicianInfo {
 
     public void setNumberOfClicks(Integer numberOfClicks) {
         this.numberOfClicks = numberOfClicks;
+    }
+
+    public String getMusicianInfo() {
+        return musicianInfo;
+    }
+
+    public void setMusicianInfo(String musicianInfo) {
+        this.musicianInfo = musicianInfo;
     }
 
     @Override

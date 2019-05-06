@@ -1,16 +1,19 @@
 package com.vk.jsonphotoparser;
 
+import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
+
 public class Item {
 
     private int id;
-    private int album_id;
-    private int owner_id;
-    private int user_id;
-    private String photo_75;
-    private String photo_130;
-    private String photo_604;
-    private int width;
-    private int height;
+    @SerializedName("album_id")
+    private int albumId;
+    @SerializedName("owner_id")
+    private int ownerId;
+    @SerializedName("user_id")
+    private int userId;
+    private List<Size> sizes;
     private String text;
     private  int date;
 
@@ -23,68 +26,36 @@ public class Item {
         this.id = id;
     }
 
-    public int getAlbum_id() {
-        return album_id;
+    public int getAlbumId() {
+        return albumId;
     }
 
-    public void setAlbum_id(int album_id) {
-        this.album_id = album_id;
+    public void setAlbumId(int albumId) {
+        this.albumId = albumId;
     }
 
-    public int getOwner_id() {
-        return owner_id;
+    public int getOwnerId() {
+        return ownerId;
     }
 
-    public void setOwner_id(int owner_id) {
-        this.owner_id = owner_id;
+    public void setOwnerId(int ownerId) {
+        this.ownerId = ownerId;
     }
 
-    public int getUser_id() {
-        return user_id;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
-    public String getPhoto_75() {
-        return photo_75;
+    public List<Size> getSizes() {
+        return sizes;
     }
 
-    public void setPhoto_75(String photo_75) {
-        this.photo_75 = photo_75;
-    }
-
-    public String getPhoto_130() {
-        return photo_130;
-    }
-
-    public void setPhoto_130(String photo_130) {
-        this.photo_130 = photo_130;
-    }
-
-    public String getPhoto_604() {
-        return photo_604;
-    }
-
-    public void setPhoto_604(String photo_604) {
-        this.photo_604 = photo_604;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
+    public void setSizes(List<Size> sizes) {
+        this.sizes = sizes;
     }
 
     public String getText() {
