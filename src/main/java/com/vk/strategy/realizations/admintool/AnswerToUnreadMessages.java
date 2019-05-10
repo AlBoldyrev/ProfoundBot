@@ -4,22 +4,15 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
-import com.vk.api.sdk.exceptions.ApiException;
-import com.vk.api.sdk.exceptions.ClientException;
-import com.vk.parser.Item;
-import com.vk.parser.Parser;
-import com.vk.util.MessageSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 @Component
-public class AnswerToUnreadMessages  implements  AdminToolResponseHandler  {
+public class AnswerToUnreadMessages implements AdminToolResponseHandler  {
 
     @Autowired
     private VkApiClient apiClient;
@@ -33,7 +26,7 @@ public class AnswerToUnreadMessages  implements  AdminToolResponseHandler  {
     private final String MESSAGE_TO_USER = "привет) у меня был небольшой технический сбой, но админы меня уже поправили\n"+
             "вроде как, я снова работаю) проверь &#128521;";
 
-    public void handle() throws ClientException, ApiException, InterruptedException {
+    public void handle() {
 
         logger.info("Job to solve unanswered dialog is started!");
         GsonBuilder builder = new GsonBuilder();

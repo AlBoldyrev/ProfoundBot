@@ -27,18 +27,18 @@ public class MessageSender {
 
     private final Random random = new Random();
 
-    Logger logger = LoggerFactory.getLogger(MessageSender.class);
+    private Logger log = LoggerFactory.getLogger(MessageSender.class);
 
     public void sendMessageTextOnly(int userId, String message) {
 
-        String userDomain = null;
+        String userDomain;
         userDomain = userInfo.getUserDomain(groupActor, userId);
         try {
             apiClient.messages().send(groupActor).peerId(userId).userIds(userId).message(message).randomId(random.nextInt()).domain(userDomain).execute();
         } catch (ApiException e) {
-            logger.error("Something wrong with API: " + e.getMessage());
+            log.error("Something wrong with API: " + e.getMessage());
         } catch (ClientException e) {
-            logger.error("Something wrong with CLIENT: " + e.getMessage());
+            log.error("Something wrong with CLIENT: " + e.getMessage());
         }
 
     }
@@ -50,9 +50,9 @@ public class MessageSender {
         try {
             apiClient.messages().send(groupActor).peerId(userId).userIds(userId).message(message).randomId(random.nextInt()).domain(userDomain).attachment(attachments).execute();
         } catch (ApiException e) {
-            logger.error("Something wrong with API: " + e.getMessage());
+            log.error("Something wrong with API: " + e.getMessage());
         } catch (ClientException e) {
-            logger.error("Something wrong with CLIENT: " + e.getMessage());
+            log.error("Something wrong with CLIENT: " + e.getMessage());
         }
     }
 
@@ -62,11 +62,11 @@ public class MessageSender {
         userDomain = userInfo.getUserDomain(groupActor, userId);
         try {
             apiClient.messages().send(groupActor).peerId(userId).userIds(userId).randomId(random.nextInt())
-                    .domain(userDomain).attachment(attachments).unsafeParam("keyboard", keyboard).execute();
+                    .domain(userDomain).message("keyboard").attachment(attachments).unsafeParam("keyboard", keyboard).execute();
         } catch (ApiException e) {
-            logger.error("Something wrong with API: " + e.getMessage());
+            log.error("Something wrong with API: " + e.getMessage());
         } catch (ClientException e) {
-            logger.error("Something wrong with CLIENT: " + e.getMessage());
+            log.error("Something wrong with CLIENT: " + e.getMessage());
         }
     }
 
@@ -78,9 +78,9 @@ public class MessageSender {
             apiClient.messages().send(groupActor).peerId(userId).userIds(userId).randomId(random.nextInt())
                     .domain(userDomain).attachment(attachments).execute();
         } catch (ApiException e) {
-            logger.error("Something wrong with API: " + e.getMessage());
+            log.error("Something wrong with API: " + e.getMessage());
         } catch (ClientException e) {
-            logger.error("Something wrong with CLIENT: " + e.getMessage());
+            log.error("Something wrong with CLIENT: " + e.getMessage());
         }
 
     }

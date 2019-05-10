@@ -14,6 +14,64 @@ public class Audio {
     @Column(name = "audio_name")
     private String audioName;
 
+    //todo rename
+    @Column(name = "audio_executor")
+    private String audioArtist;
+
+    @Column(name = "audio_title")
+    private String audioTitle;
+
+    @Column(name = "audio_vkid")
+    private Integer audioVKID;
+
+    @Column(name = "audio_owner_id")
+    private Integer audioOwnerId;
+
+    public Audio(String audioArtist, String audioTitle, Integer audioVKID, Integer audioOwnerId) {
+        this.audioArtist = audioArtist;
+        this.audioTitle = audioTitle;
+        this.audioVKID = audioVKID;
+        this.audioOwnerId = audioOwnerId;
+    }
+
+    public Audio(){}
+
+    public String getAudioArtist() {
+        return audioArtist;
+    }
+
+    public Integer getAudioVKID() {
+        return audioVKID;
+    }
+
+    public void setAudioVKID(Integer audioVKID) {
+        this.audioVKID = audioVKID;
+    }
+
+    public Integer getAudioOwnerId() {
+        return audioOwnerId;
+    }
+
+    public void setAudioOwnerId(Integer audioOwnerId) {
+        this.audioOwnerId = audioOwnerId;
+    }
+
+    public String getAudioExecutor() {
+        return audioArtist;
+    }
+
+    public void setAudioArtist(String audioArtist) {
+        this.audioArtist = audioArtist;
+    }
+
+    public String getAudioTitle() {
+        return audioTitle;
+    }
+
+    public void setAudioTitle(String audioTitle) {
+        this.audioTitle = audioTitle;
+    }
+
     public int getAudioId() {
         return audioId;
     }

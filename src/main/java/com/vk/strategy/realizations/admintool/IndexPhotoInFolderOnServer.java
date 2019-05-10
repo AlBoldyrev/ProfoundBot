@@ -18,7 +18,7 @@ public class IndexPhotoInFolderOnServer implements  AdminToolResponseHandler {
 
     Logger logger = LoggerFactory.getLogger(IndexPhotoInFolderOnServer.class);
 
-    public void handle() throws IOException {
+    public void handle() {
         logger.info("Indexing photo in folder on server is starting!");
         Indexer indexer = new Indexer(constants.getPhotoFolderPath(), constants.getReIndexPath());
     }

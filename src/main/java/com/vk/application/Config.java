@@ -12,6 +12,9 @@ import com.vk.strategy.realizations.admintool.*;
 import com.vk.util.MessageSender;
 import com.vk.util.PhotoDownloader;
 import com.vk.util.UserInfo;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,9 +24,11 @@ import java.io.InputStream;
 import java.util.Properties;
 
 @Configuration
+@Slf4j
 public class Config {
 
     private static final String PROPERTIES_FILE = "application.properties";
+    private Logger log = LoggerFactory.getLogger(Config.class);
 
     @Bean
     public HttpTransportClient httpClient() {
@@ -46,8 +51,14 @@ public class Config {
     }
 
     @Bean
-    public Properties properties() throws IOException {
-        return readProperties();
+    public Properties properties() {
+        Properties properties = null;
+        try {
+            properties = readProperties();
+        } catch (IOException ioe) {
+            log.error("Can not read properties... :( " + ioe.getStackTrace());
+        }
+        return properties;
     }
 
     @Bean

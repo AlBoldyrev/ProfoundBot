@@ -27,7 +27,7 @@ public class IndexAudioCommerceFromAlbum implements  AdminToolResponseHandler {
 
     Logger logger = LoggerFactory.getLogger(IndexAudioCommerceFromAlbum.class);
 
-    public void handle() throws IOException, ClientException {
+    public void handle() {
 
         logger.info("Indexing audioCommerceAlbum is starting!");
 

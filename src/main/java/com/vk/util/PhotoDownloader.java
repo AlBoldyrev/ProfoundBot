@@ -12,20 +12,27 @@ import com.vk.constants.Constants;
 import com.vk.jsonphotoparser.Item;
 import com.vk.jsonphotoparser.PhotoParser;
 import com.vk.jsonphotoparser.Size;
+import io.netty.util.internal.StringUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.vk.constants.Constants.MAX_AVAILABLE_PHOTOS_COUNT;
 
 @Component
+@Slf4j
 public class PhotoDownloader {
 
     @Autowired
@@ -34,7 +41,9 @@ public class PhotoDownloader {
     @Autowired
     private GroupActor groupActor;
 
-    public void downloadPhotosFromAlbum(VkApiClient apiClient, String albumId, int groupId, String photoFolderPath) throws ClientException, IOException {
+    private Logger logger = LoggerFactory.getLogger(PhotoDownloader.class);
+
+    public void downloadPhotosFromAlbum(VkApiClient apiClient, String albumId, int groupId, String photoFolderPath) {
 
         PhotoParser photoParserObjectForDetectionTotalPhotoCount = getPhotoParserObject(apiClient, albumId, groupId, 1, 1);
 
@@ -54,6 +63,7 @@ public class PhotoDownloader {
                 sb.append("photo").append(item.getOwnerId()).append("_").append(item.getId());
                 List<Size> sizes = item.getSizes();
                 String url = null;
+                InputStream in = null;
                 for (Size size: sizes) {
                     if (size.getType().equals("x")) {
                         url = size.getUrl();
@@ -62,24 +72,26 @@ public class PhotoDownloader {
                 if (url == null) {
                     url = sizes.get(0).getUrl();
                 }
-
-                try (InputStream in = new URL(url).openStream()) {
-                    try {
-                        Files.copy(in, Paths.get(photoFolderPath + "\\" + sb + ".jpg"));
-                        System.out.println(sb + " is written");
-                    } catch (FileAlreadyExistsException faee) {
-                        System.out.println(sb + " is skipped" + " counterOfSkippedPhotos: " + counterOfSkippedPhotos++);
-                    }
+                try {
+                    in = new URL(url).openStream();
+                    Files.copy(in, Paths.get(photoFolderPath + "\\" + sb + ".jpg"));
+                } catch (MalformedURLException me) {
+                    logger.error("Malformed exception happened, need something to do!" + me.getStackTrace());
+                } catch (IOException ioe) {
+                    logger.error("IO exception!!! Something wrong when trying to download photo!" + ioe.getStackTrace());
                 }
-
             }
         }
     }
 
-    public PhotoParser getPhotoParserObject(VkApiClient apiClient, String albumId, int groupId, int photoCount, int offset) throws ClientException {
+    public PhotoParser getPhotoParserObject(VkApiClient apiClient, String albumId, int groupId, int photoCount, int offset) {
 
-        String responseWithPhotoUrls2 = apiClient.photos().get(userActor).albumId("218340014").count(photoCount).offset(offset).ownerId(662638).executeAsString();
-        String responseWithPhotoUrls = apiClient.photos().get(userActor).albumId(albumId).count(photoCount).offset(offset).ownerId(groupId).executeAsString();
+        String responseWithPhotoUrls = StringUtil.EMPTY_STRING;
+        try {
+            responseWithPhotoUrls = apiClient.photos().get(userActor).albumId(albumId).count(photoCount).offset(offset).ownerId(groupId).executeAsString();
+        } catch (ClientException ce) {
+            logger.error("Client exception! Can not execute API CLIENT methods" + Arrays.toString(ce.getStackTrace()));
+        }
 
         JsonParser jsonParser = new JsonParser();
         JsonObject json = jsonParser.parse(responseWithPhotoUrls).getAsJsonObject();

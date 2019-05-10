@@ -37,7 +37,7 @@ public class AdminTool {
     @Autowired
     private AnswerToUnreadMessages answerToUnreadMessages;
 
-    void handleMessageNewAsAdmin(JsonObject jsonObject) throws ClientException, IOException, ApiException, InterruptedException {
+    void handleMessageNewAsAdmin(JsonObject jsonObject) {
 
         Map<String, AdminToolResponseHandler> strategyHandlers = new HashMap<>();
         strategyHandlers.put("Сделать связь фоток с музоном по альбомам", albumAudioPhotoCorrelator);

@@ -14,14 +14,21 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.messages.Keyboard;
 import com.vk.application.IResponseHandler;
 import com.vk.constants.Constants;
+import com.vk.entities.MusicianInfo;
 import com.vk.entities.PhotoAudio;
+import com.vk.entities.State;
 import com.vk.lirestaff.ListOfPhotosGetter;
 import com.vk.parser.*;
+import com.vk.repository.AudioRepository;
 import com.vk.repository.MusicianRepository;
 import com.vk.repository.PhotoAudioRepository;
+import com.vk.repository.StateRepository;
 import com.vk.util.MessageSender;
 import com.vk.util.UserInfo;
 import io.netty.util.internal.StringUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +43,7 @@ import java.util.Random;
 import static com.vk.constants.Constants.*;
 
 @Component
+@Slf4j
 public class MessageNew implements IResponseHandler {
 
     @Autowired
@@ -65,14 +73,22 @@ public class MessageNew implements IResponseHandler {
     @Autowired
     MusicianRepository musicianRepository;
 
+    @Autowired
+    AudioRepository audioRepository;
+
+    @Autowired
+    StateRepository stateRepository;
+
     private final Random random = new Random();
+
+    public static Logger log = LoggerFactory.getLogger(MessageNew.class);
 
     private static final String keyboard = "{ \"one_time\": true, \"buttons\": " +
             "[[{ \"action\": { \"type\": \"text\", \"payload\": \"{\\\"button\\\": \\\"3\\\"}\", " +
             "\"label\": \"Подробнее о музыканте\" }, \"color\": \"default\" }] ] } ";
             Keyboard keyboard2 = new Keyboard();
 
-    public void handle(JsonObject jsonObject, GroupActor groupActor) throws Exception {
+    public void handle(JsonObject jsonObject, GroupActor groupActor) {
 
         ModelMessageNew message = parseJsonIntoModelMessageNew(jsonObject);
         int userIdThatSendTheMessage = message.getObject().getUserId();
@@ -86,13 +102,25 @@ public class MessageNew implements IResponseHandler {
         if (isAttachmentExists(jsonObject)) {
             actionIfAttachmentExist(jsonObject, groupActor, userIdThatSendTheMessage);
         } else {
-            apiClient.messages().send(groupActor).peerId(userIdThatSendTheMessage).userIds(userIdThatSendTheMessage).randomId(random.nextInt())
-                    .domain(userDomain).message("Прости, меня не научили читать текст. Пришли картинку, пожалуйста!").execute();
+            if (message.getObject().getBody().equals("Подробнее о музыканте")) {
+                State stateOfACurrentUser = stateRepository.findByUserId(userIdThatSendTheMessage);
+                String audioArtist = stateOfACurrentUser.getAudio().getAudioArtist();
+                MusicianInfo musician = musicianRepository.findByMusicianName(audioArtist);
+                String musicianInfo = musician.getMusicianInfo();
+
+                messageSender.sendMessageTextOnly(userIdThatSendTheMessage, musicianInfo);
+
+                stateOfACurrentUser.setInfoSent(true);
+                stateRepository.save(stateOfACurrentUser);
+
+            } else {
+                messageSender.sendMessageTextOnly(userIdThatSendTheMessage, "Прости, меня не научили читать текст. Пришли картинку, пожалуйста!");
+            }
         }
     }
 
 
-    private void actionIfAttachmentExist(JsonObject jsonObject, GroupActor groupActor, int userId) throws IOException, ClientException, ApiException {
+    private void actionIfAttachmentExist(JsonObject jsonObject, GroupActor groupActor, int userId) {
 
         //-----------------------------------------------
         //Part for 10 photos
@@ -133,12 +161,15 @@ public class MessageNew implements IResponseHandler {
 
         String attachmentsNonCommerce = StringUtil.EMPTY_STRING;
         String attachmentsCommerce = StringUtil.EMPTY_STRING;
-
-        if (!audioNamesFromAlbumCommerce.isEmpty()) {
-            attachmentsNonCommerce = audioNamesFromAlbumNonCommerce.get(random.nextInt(audioNamesFromAlbumNonCommerce.size()));
-        }
-        if (!audioNamesFromAlbumNonCommerce.isEmpty()) {
-            attachmentsNonCommerce = audioNamesFromAlbumCommerce.get(random.nextInt(audioNamesFromAlbumCommerce.size()));
+        try {
+            if (!audioNamesFromAlbumCommerce.isEmpty()) {
+                attachmentsNonCommerce = audioNamesFromAlbumNonCommerce.get(random.nextInt(audioNamesFromAlbumNonCommerce.size()));
+            }
+            if (!audioNamesFromAlbumNonCommerce.isEmpty()) {
+                attachmentsCommerce = audioNamesFromAlbumCommerce.get(random.nextInt(audioNamesFromAlbumCommerce.size()));
+            }
+        } catch (IllegalArgumentException iae) {
+            log.error("Bound exception! " + iae.getStackTrace());
         }
 
         //---------------------------------------------------
@@ -155,7 +186,12 @@ public class MessageNew implements IResponseHandler {
                     } else {
                         messageSender.sendMessageTextOnly(userId, "Подборка с коммерческим музоном (есть коммерческий) :");
                         messageSender.sendMessageWithAttachmentsAndKeyboard(userId, attachmentsCommerce, keyboard);
+
+                        com.vk.entities.Audio audio = audioRepository.findByAudioName(attachmentsCommerce);
+                        State state = new State(userId, false, audio);
+                        stateRepository.save(state);
                     }
+
                 } else {
                     messageSender.sendMessageTextOnly(userId, "Подборка с некоммерческим музоном (нет коммерческого) :");
                     messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
@@ -178,36 +214,7 @@ public class MessageNew implements IResponseHandler {
         }
     }
 
-    private List<String> getAudioNames() throws ClientException {
-
-        GsonBuilder builder = new GsonBuilder();
-        Gson gson = builder.create();
-
-
-        List<String> audioNames = new ArrayList<>();
-
-        String s = apiClient.wall().get(userActor).ownerId(Constants.PUBLIC_ID_WITH_AUDIO_ON_THE_WALL).executeAsString();
-        Parser parser = gson.fromJson(s, Parser.class);
-
-        List<Item> items = parser.getResponse().getItems();
-        for (Item item: items) {
-            List<Attachment> audioAttachments = item.getAttachments();
-            for (Attachment attachment: audioAttachments) {
-
-                Audio audio = attachment.getAudio();
-                if (audio == null) {
-                    continue;
-                }
-                int ownerId = audio.getOwner_id();
-                int id = audio.getId();
-                String audioName = "audio" + ownerId + "_" + id;
-                audioNames.add(audioName);
-            }
-        }
-        return audioNames;
-    }
-
-    private List<String> getPhotoNames(JsonObject jsonObject, String userPhotoFolderPath, String reIndex, int numberOfPhotos) throws IOException {
+    private List<String> getPhotoNames(JsonObject jsonObject, String userPhotoFolderPath, String reIndex, int numberOfPhotos) {
 
         ModelMessageNew message = parseJsonIntoModelMessageNew(jsonObject);
 

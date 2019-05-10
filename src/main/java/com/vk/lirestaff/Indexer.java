@@ -8,6 +8,8 @@ import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -21,11 +23,16 @@ public class Indexer {
 
     private String imgFolderPath;
 
-    public Indexer(String imgFolderPath,String pathForIndex) throws IOException {
+
+    private Logger log = LoggerFactory.getLogger(Indexer.class);
+
+    public Indexer(String imgFolderPath,String pathForIndex) {
 
         this.imgFolderPath = imgFolderPath;
         boolean passed = false;
-
+        ArrayList<String> images = null;
+        GlobalDocumentBuilder globalDocumentBuilder = null;
+        IndexWriter iw = null;
         if (imgFolderPath.length() > 0) {
             File f = new File(imgFolderPath);
             if (f.exists() && f.isDirectory()) {
@@ -34,13 +41,16 @@ public class Indexer {
         }
 
         if (!passed) {
-
-            System.exit(1);
+            log.error("Before this log was system.exit(1). Some terrible mistake!");
+            /*System.exit(1);*/
         }
-        ArrayList<String> images = FileUtils.getAllImages(new File(imgFolderPath), true);
-        GlobalDocumentBuilder globalDocumentBuilder = new GlobalDocumentBuilder(CEDD.class);
-        IndexWriter iw = LuceneUtils.createIndexWriter(pathForIndex, true, LuceneUtils.AnalyzerType.WhitespaceAnalyzer);
-
+        try {
+            images = FileUtils.getAllImages(new File(imgFolderPath), true);
+            globalDocumentBuilder = new GlobalDocumentBuilder(CEDD.class);
+            iw = LuceneUtils.createIndexWriter(pathForIndex, true, LuceneUtils.AnalyzerType.WhitespaceAnalyzer);
+        } catch (IOException ioe) {
+            log.error("Can not operate with file system at the local computer" + ioe.getStackTrace());
+        }
         for (Iterator<String> it = images.iterator(); it.hasNext(); ) {
             String imageFilePath = it.next();
             try {
@@ -52,7 +62,11 @@ public class Indexer {
                 e.printStackTrace();
             }
         }
-        LuceneUtils.closeWriter(iw);
+        try {
+            LuceneUtils.closeWriter(iw);
+        } catch (IOException ioe) {
+            log.error("Can not close writer whatever it means!!!!" + ioe.getStackTrace());
+        }
     }
 
 

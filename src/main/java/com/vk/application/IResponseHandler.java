@@ -8,6 +8,6 @@ import com.vk.api.sdk.exceptions.ClientException;
 
 public interface IResponseHandler {
 
-    void handle(JsonObject jsonObject, GroupActor groupActor) throws Exception;
+    void handle(JsonObject jsonObject, GroupActor groupActor);
 
 }

@@ -5,6 +5,8 @@ import com.vk.api.sdk.callback.longpoll.responses.GetLongPollEventsResponse;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.client.actors.UserActor;
+import com.vk.api.sdk.exceptions.ApiException;
+import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.exceptions.LongPollServerKeyExpiredException;
 import com.vk.api.sdk.objects.responses.GetLongPollServerResponse;
 import com.vk.strategy.realizations.*;
@@ -56,7 +58,7 @@ class BotRequestHandler {
         this.waitTime = DEFAULT_WAIT;
     }
 
-    void run() throws Exception {
+    void run() {
 
         Map<String, IResponseHandler> strategyHandlers = new HashMap<>();
         strategyHandlers.put("message_new", messageNew);
@@ -65,7 +67,14 @@ class BotRequestHandler {
         strategyHandlers.put("message_allow", messageAllow);
         strategyHandlers.put("message_typing_state", messageTypingState);
 
-        GetLongPollServerResponse longPollServer = apiClient.groupsLongPoll().getLongPollServer(groupActor).execute();
+        GetLongPollServerResponse longPollServer = null;
+        try {
+            longPollServer = apiClient.groupsLongPoll().getLongPollServer(groupActor).execute();
+        } catch (ApiException e) {
+            log.error("API Exception !!! " + e.getStackTrace());
+        } catch (ClientException e) {
+            log.error("CLIENT Exception !!! " + e.getStackTrace());
+        }
         int lastTimeStamp = longPollServer.getTs();
 
 
@@ -86,8 +95,18 @@ class BotRequestHandler {
             }
             lastTimeStamp = eventsResponse.getTs();
         } catch (LongPollServerKeyExpiredException e) {
-            longPollServer = apiClient.groupsLongPoll().getLongPollServer(groupActor).execute();;
+            try {
+                longPollServer = apiClient.groupsLongPoll().getLongPollServer(groupActor).execute();
+            } catch (ApiException ex) {
+                log.error("API client when trying to connect to LONG POLL server! " + ex.getStackTrace());
+            } catch (ClientException ex) {
+                log.error("CLIENT client when trying to connect to LONG POLL server! " + ex.getStackTrace());
+            }
             log.info(longPollServer.toString());
+        } catch (ApiException e) {
+            log.error("API client when trying to get LONG POLL server response! " + e.getStackTrace());
+        } catch (ClientException e) {
+            log.error("CLIENT client when trying to get LONG POLL server response! " + e.getStackTrace());
         }
     }
 }

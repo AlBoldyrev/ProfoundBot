@@ -17,6 +17,18 @@ public class PhotoAudio {
     @Column(name = "audio_name")
     private String audioName;
 
+    @ManyToOne
+    @JoinColumn(name = "audio")
+    private Audio audio;
+
+    public Audio getAudio() {
+        return audio;
+    }
+
+    public void setAudio(Audio audio) {
+        this.audio = audio;
+    }
+
     public int getPhotoAudioId() {
         return photoAudioId;
     }
