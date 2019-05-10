@@ -92,8 +92,6 @@ public class MessageNew implements IResponseHandler {
 
         ModelMessageNew message = parseJsonIntoModelMessageNew(jsonObject);
         int userIdThatSendTheMessage = message.getObject().getUserId();
-        String userDomain = userInfo.getUserDomain(groupActor, userIdThatSendTheMessage);
-
 
         if (userIdThatSendTheMessage == ALEXANDER_BOLDYREV_VKID) {
            adminTool.handleMessageNewAsAdmin(jsonObject);
@@ -103,15 +101,19 @@ public class MessageNew implements IResponseHandler {
             actionIfAttachmentExist(jsonObject, groupActor, userIdThatSendTheMessage);
         } else {
             if (message.getObject().getBody().equals("Подробнее о музыканте")) {
-                State stateOfACurrentUser = stateRepository.findByUserId(userIdThatSendTheMessage);
+                State stateOfACurrentUser = stateRepository.findByUserId(userIdThatSendTheMessage, false);
                 String audioArtist = stateOfACurrentUser.getAudio().getAudioArtist();
                 MusicianInfo musician = musicianRepository.findByMusicianName(audioArtist);
                 String musicianInfo = musician.getMusicianInfo();
-
+                Integer numberOfClicks = musician.getNumberOfClicks();
+                musician.setNumberOfClicks(numberOfClicks++);
                 messageSender.sendMessageTextOnly(userIdThatSendTheMessage, musicianInfo);
 
                 stateOfACurrentUser.setInfoSent(true);
+                musicianRepository.save(musician);
                 stateRepository.save(stateOfACurrentUser);
+
+
 
             } else {
                 messageSender.sendMessageTextOnly(userIdThatSendTheMessage, "Прости, меня не научили читать текст. Пришли картинку, пожалуйста!");
