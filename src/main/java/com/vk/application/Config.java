@@ -117,6 +117,9 @@ public class Config {
     MessageSender messageSender() {return new MessageSender();}
 
     @Bean
+    Preparation preparation() {return new Preparation();}
+
+    @Bean
     Constants constants(Properties properties) {
         String indexPath = properties.getProperty("indexPath");
         String reIndexPath = properties.getProperty("reIndexPath");

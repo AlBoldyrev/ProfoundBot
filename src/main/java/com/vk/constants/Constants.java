@@ -5,6 +5,7 @@ public class Constants {
     public static final int PUBLIC_ID_WITH_AUDIO_ON_THE_WALL = -170362981;
     public static final int NUMBER_OF_PHOTOS_IN_THE_MESSAGE = 9;
     public static final int ALEXANDER_BOLDYREV_VKID = 662638;
+    public static final int VASILII_KALITEEVSKY_VKID = 1701808;
     public final static int MAX_AVAILABLE_PHOTOS_COUNT = 1000;
 
     private String indexPath;

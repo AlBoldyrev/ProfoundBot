@@ -93,7 +93,7 @@ public class MessageNew implements IResponseHandler {
         ModelMessageNew message = parseJsonIntoModelMessageNew(jsonObject);
         int userIdThatSendTheMessage = message.getObject().getUserId();
 
-        if (userIdThatSendTheMessage == ALEXANDER_BOLDYREV_VKID) {
+        if (userIdThatSendTheMessage == ALEXANDER_BOLDYREV_VKID || userIdThatSendTheMessage == VASILII_KALITEEVSKY_VKID) {
            adminTool.handleMessageNewAsAdmin(jsonObject);
         }
 
@@ -107,9 +107,10 @@ public class MessageNew implements IResponseHandler {
                     String audioArtist = stateLast.getAudio().getAudioArtist();
                     MusicianInfo musician = musicianRepository.findByMusicianName(audioArtist);
                     String musicianInfo = musician.getMusicianInfo();
+                    String replace = musicianInfo.replace("\\n", "\n");
                     Integer numberOfClicks = musician.getNumberOfClicks();
                     musician.setNumberOfClicks(++numberOfClicks);
-                    messageSender.sendMessageTextOnly(userIdThatSendTheMessage, musicianInfo);
+                    messageSender.sendMessageTextOnly(userIdThatSendTheMessage, replace);
                     stateLast.setInfoSent(true);
                     musicianRepository.save(musician);
                     stateRepository.save(stateLast);
@@ -182,15 +183,12 @@ public class MessageNew implements IResponseHandler {
         //Part for sending correct message
 
 
-        messageSender.sendMessageTextOnly(userId, "Просто подборка, без музона:");
         messageSender.sendMessageWithAttachmentsOnly(userId, photoNamesWithoutSquareBracketsAndWhitespaces);
         if (!audioNamesFromAlbumNonCommerce.isEmpty()) {
             if (!audioNamesFromAlbumCommerce.isEmpty()) {
-                if (random.nextBoolean()) {
-                    messageSender.sendMessageTextOnly(userId, "Подборка с некоммерческим музоном (есть коммерческий):");
+                if (random.nextInt(10)==0) {
                     messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
                 } else {
-                    messageSender.sendMessageTextOnly(userId, "Подборка с коммерческим музоном (есть коммерческий) :");
                     messageSender.sendMessageWithAttachmentsAndKeyboard(userId, attachmentsCommerce, keyboard);
 
                     com.vk.entities.Audio audio = audioRepository.findByAudioName(attachmentsCommerce);
@@ -199,7 +197,6 @@ public class MessageNew implements IResponseHandler {
                 }
 
             } else {
-                messageSender.sendMessageTextOnly(userId, "Подборка с некоммерческим музоном (нет коммерческого) :");
                 messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
             }
         }

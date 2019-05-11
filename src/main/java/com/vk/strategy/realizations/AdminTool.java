@@ -37,6 +37,9 @@ public class AdminTool {
     @Autowired
     private AnswerToUnreadMessages answerToUnreadMessages;
 
+    @Autowired
+    private Preparation preparation;
+
     void handleMessageNewAsAdmin(JsonObject jsonObject) {
 
         Map<String, AdminToolResponseHandler> strategyHandlers = new HashMap<>();
@@ -45,6 +48,7 @@ public class AdminTool {
         strategyHandlers.put("Скачать фото и сделать индекс для папки с музоном", indexAudioFromAlbum);
         strategyHandlers.put("Скачать фото и сделать индекс для папки с коммерческим музоном", indexAudioCommerceFromAlbum);
         strategyHandlers.put("Ответить на непрочитанные сообщения", answerToUnreadMessages);
+        strategyHandlers.put("Сделать приготовления", preparation);
 
         ModelMessageNew modelMessageNew = messageNew.parseJsonIntoModelMessageNew(jsonObject);
         String messageText = modelMessageNew.getObject().getBody();
