@@ -101,17 +101,21 @@ public class MessageNew implements IResponseHandler {
             actionIfAttachmentExist(jsonObject, groupActor, userIdThatSendTheMessage);
         } else {
             if (message.getObject().getBody().equals("Подробнее о музыканте")) {
-                State stateOfACurrentUser = stateRepository.findByUserId(userIdThatSendTheMessage, false);
-                String audioArtist = stateOfACurrentUser.getAudio().getAudioArtist();
-                MusicianInfo musician = musicianRepository.findByMusicianName(audioArtist);
-                String musicianInfo = musician.getMusicianInfo();
-                Integer numberOfClicks = musician.getNumberOfClicks();
-                musician.setNumberOfClicks(++numberOfClicks);
-                messageSender.sendMessageTextOnly(userIdThatSendTheMessage, musicianInfo);
-
-                stateOfACurrentUser.setInfoSent(true);
-                musicianRepository.save(musician);
-                stateRepository.save(stateOfACurrentUser);
+                try {
+                    List<State> stateOfACurrentUser = stateRepository.findByUserId(userIdThatSendTheMessage, false);
+                    State stateLast = stateOfACurrentUser.get(stateOfACurrentUser.size() - 1);
+                    String audioArtist = stateLast.getAudio().getAudioArtist();
+                    MusicianInfo musician = musicianRepository.findByMusicianName(audioArtist);
+                    String musicianInfo = musician.getMusicianInfo();
+                    Integer numberOfClicks = musician.getNumberOfClicks();
+                    musician.setNumberOfClicks(++numberOfClicks);
+                    messageSender.sendMessageTextOnly(userIdThatSendTheMessage, musicianInfo);
+                    stateLast.setInfoSent(true);
+                    musicianRepository.save(musician);
+                    stateRepository.save(stateLast);
+                } catch (ArrayIndexOutOfBoundsException aiobe) {
+                    messageSender.sendMessageTextOnly(userIdThatSendTheMessage, "А информации-то вроде как и нет");
+                }
 
 
 
