@@ -62,7 +62,7 @@ public class MessageSender {
         userDomain = userInfo.getUserDomain(groupActor, userId);
         try {
             apiClient.messages().send(groupActor).peerId(userId).userIds(userId).randomId(random.nextInt())
-                    .domain(userDomain).message("keyboard").attachment(attachments).unsafeParam("keyboard", keyboard).execute();
+                    .domain(userDomain).message(" ").attachment(attachments).unsafeParam("keyboard", keyboard).execute();
         } catch (ApiException e) {
             log.error("Something wrong with API: " + e.getMessage());
         } catch (ClientException e) {
@@ -76,13 +76,13 @@ public class MessageSender {
         userDomain = userInfo.getUserDomain(groupActor, userId);
         try {
             apiClient.messages().send(groupActor).peerId(userId).userIds(userId).randomId(random.nextInt())
-                    .domain(userDomain).attachment(attachments).execute();
+                    .domain(userDomain).message("    ").attachment(attachments).execute();
         } catch (ApiException e) {
             log.error("Something wrong with API: " + e.getMessage());
         } catch (ClientException e) {
             log.error("Something wrong with CLIENT: " + e.getMessage());
         }
 
-    }
+   }
 
 }

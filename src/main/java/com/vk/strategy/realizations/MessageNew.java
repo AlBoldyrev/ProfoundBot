@@ -106,7 +106,7 @@ public class MessageNew implements IResponseHandler {
                 MusicianInfo musician = musicianRepository.findByMusicianName(audioArtist);
                 String musicianInfo = musician.getMusicianInfo();
                 Integer numberOfClicks = musician.getNumberOfClicks();
-                musician.setNumberOfClicks(numberOfClicks++);
+                musician.setNumberOfClicks(++numberOfClicks);
                 messageSender.sendMessageTextOnly(userIdThatSendTheMessage, musicianInfo);
 
                 stateOfACurrentUser.setInfoSent(true);
@@ -119,7 +119,7 @@ public class MessageNew implements IResponseHandler {
                 messageSender.sendMessageTextOnly(userIdThatSendTheMessage, "Прости, меня не научили читать текст. Пришли картинку, пожалуйста!");
             }
         }
-    }
+        }
 
 
     private void actionIfAttachmentExist(JsonObject jsonObject, GroupActor groupActor, int userId) {
@@ -164,10 +164,10 @@ public class MessageNew implements IResponseHandler {
         String attachmentsNonCommerce = StringUtil.EMPTY_STRING;
         String attachmentsCommerce = StringUtil.EMPTY_STRING;
         try {
-            if (!audioNamesFromAlbumCommerce.isEmpty()) {
+            if (!audioNamesFromAlbumNonCommerce.isEmpty()) {
                 attachmentsNonCommerce = audioNamesFromAlbumNonCommerce.get(random.nextInt(audioNamesFromAlbumNonCommerce.size()));
             }
-            if (!audioNamesFromAlbumNonCommerce.isEmpty()) {
+            if (!audioNamesFromAlbumCommerce.isEmpty()) {
                 attachmentsCommerce = audioNamesFromAlbumCommerce.get(random.nextInt(audioNamesFromAlbumCommerce.size()));
             }
         } catch (IllegalArgumentException iae) {
@@ -177,43 +177,29 @@ public class MessageNew implements IResponseHandler {
         //---------------------------------------------------
         //Part for sending correct message
 
-        if (userId == ALEXANDER_BOLDYREV_VKID) {
-            messageSender.sendMessageTextOnly(userId, "Просто подборка, без музона:");
-            messageSender.sendMessageWithAttachmentsOnly(userId, photoNamesWithoutSquareBracketsAndWhitespaces);
-            if (!audioNamesFromAlbumNonCommerce.isEmpty()) {
-                if (!audioNamesFromAlbumCommerce.isEmpty()) {
-                    if (random.nextBoolean()) {
-                        messageSender.sendMessageTextOnly(userId, "Подборка с некоммерческим музоном (есть коммерческий):");
-                        messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
-                    } else {
-                        messageSender.sendMessageTextOnly(userId, "Подборка с коммерческим музоном (есть коммерческий) :");
-                        messageSender.sendMessageWithAttachmentsAndKeyboard(userId, attachmentsCommerce, keyboard);
 
-                        com.vk.entities.Audio audio = audioRepository.findByAudioName(attachmentsCommerce);
-                        State state = new State(userId, false, audio);
-                        stateRepository.save(state);
-                    }
-
-                } else {
-                    messageSender.sendMessageTextOnly(userId, "Подборка с некоммерческим музоном (нет коммерческого) :");
+        messageSender.sendMessageTextOnly(userId, "Просто подборка, без музона:");
+        messageSender.sendMessageWithAttachmentsOnly(userId, photoNamesWithoutSquareBracketsAndWhitespaces);
+        if (!audioNamesFromAlbumNonCommerce.isEmpty()) {
+            if (!audioNamesFromAlbumCommerce.isEmpty()) {
+                if (random.nextBoolean()) {
+                    messageSender.sendMessageTextOnly(userId, "Подборка с некоммерческим музоном (есть коммерческий):");
                     messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
-                }
-            }
-        } else {
-            messageSender.sendMessageWithAttachmentsOnly(userId, photoNamesWithoutSquareBracketsAndWhitespaces);
-
-            if (!audioNamesFromAlbumNonCommerce.isEmpty()) {
-                if (!audioNamesFromAlbumCommerce.isEmpty()) {
-                    if (random.nextBoolean()) {
-                        messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
-                    } else {
-                        messageSender.sendMessageWithAttachmentsAndKeyboard(userId, attachmentsCommerce, keyboard);
-                    }
                 } else {
-                    messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
+                    messageSender.sendMessageTextOnly(userId, "Подборка с коммерческим музоном (есть коммерческий) :");
+                    messageSender.sendMessageWithAttachmentsAndKeyboard(userId, attachmentsCommerce, keyboard);
+
+                    com.vk.entities.Audio audio = audioRepository.findByAudioName(attachmentsCommerce);
+                    State state = new State(userId, false, audio);
+                    stateRepository.save(state);
                 }
+
+            } else {
+                messageSender.sendMessageTextOnly(userId, "Подборка с некоммерческим музоном (нет коммерческого) :");
+                messageSender.sendMessageWithAttachmentsOnly(userId, attachmentsNonCommerce);
             }
         }
+
     }
 
     private List<String> getPhotoNames(JsonObject jsonObject, String userPhotoFolderPath, String reIndex, int numberOfPhotos) {
