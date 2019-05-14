@@ -1,5 +1,7 @@
 package com.vk.strategy.realizations;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.exceptions.ApiException;
@@ -40,6 +42,8 @@ public class AdminTool {
     @Autowired
     private Preparation preparation;
 
+    private Gson gson = new GsonBuilder().create();
+
     void handleMessageNewAsAdmin(JsonObject jsonObject) {
 
         Map<String, AdminToolResponseHandler> strategyHandlers = new HashMap<>();
@@ -50,7 +54,7 @@ public class AdminTool {
         strategyHandlers.put("Ответить на непрочитанные сообщения", answerToUnreadMessages);
         strategyHandlers.put("Сделать приготовления", preparation);
 
-        ModelMessageNew modelMessageNew = messageNew.parseJsonIntoModelMessageNew(jsonObject);
+        ModelMessageNew modelMessageNew = gson.fromJson(jsonObject, ModelMessageNew.class);
         String messageText = modelMessageNew.getObject().getBody();
 
         AdminToolResponseHandler handler = strategyHandlers.get(messageText);

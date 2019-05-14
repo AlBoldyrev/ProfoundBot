@@ -8,6 +8,10 @@ public class Constants {
     public static final int VASILII_KALITEEVSKY_VKID = 1701808;
     public final static int MAX_AVAILABLE_PHOTOS_COUNT = 1000;
 
+    public static final String KEYBOARD = "{ \"one_time\": true, \"buttons\": " +
+            "[[{ \"action\": { \"type\": \"text\", \"payload\": \"{\\\"button\\\": \\\"3\\\"}\", " +
+            "\"label\": \"Подробнее о музыканте\" }, \"color\": \"default\" }] ] } ";
+
     private String indexPath;
     private String reIndexPath;
     private String photoFolderPath;

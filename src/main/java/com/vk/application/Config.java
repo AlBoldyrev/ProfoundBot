@@ -9,9 +9,7 @@ import com.vk.constants.Constants;
 import com.vk.lirestaff.ListOfPhotosGetter;
 import com.vk.strategy.realizations.*;
 import com.vk.strategy.realizations.admintool.*;
-import com.vk.util.MessageSender;
-import com.vk.util.PhotoDownloader;
-import com.vk.util.UserInfo;
+import com.vk.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,6 +116,15 @@ public class Config {
 
     @Bean
     Preparation preparation() {return new Preparation();}
+
+    @Bean
+    AudioForMessageService audioForMessageService() {return new AudioForMessageService();}
+
+    @Bean
+    PhotoForMessageService photoForMessageService() {return new PhotoForMessageService();}
+
+    @Bean
+    Util util() {return new Util();}
 
     @Bean
     Constants constants(Properties properties) {

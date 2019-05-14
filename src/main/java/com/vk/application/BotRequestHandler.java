@@ -80,16 +80,17 @@ class BotRequestHandler {
 
         while (true) try {
 
-            GetLongPollEventsResponse eventsResponse = apiClient.longPoll().getEvents(longPollServer.getServer(), longPollServer.getKey(), lastTimeStamp).waitTime(waitTime).execute();
+            GetLongPollEventsResponse eventsResponse = apiClient.longPoll().getEvents(longPollServer.getServer(),
+                    longPollServer.getKey(), lastTimeStamp).waitTime(waitTime).execute();
+
             for (JsonObject jsonObject : eventsResponse.getUpdates()) {
                 String type = jsonObject.get("type").getAsString();
-                System.out.println("jsonType: " + type + "  " + jsonObject);
-
+                log.info("jsonType: " + type + "  " + jsonObject);
                 IResponseHandler responseHandler = strategyHandlers.get(type);
                 try {
                     responseHandler.handle(jsonObject, groupActor);
                 } catch (NullPointerException npe) {
-                    log.error("This request can not be handled right now." + Arrays.toString(npe.getStackTrace()));
+                    log.error("This request can not be handled right now." + npe.getStackTrace());
                 }
 
             }
