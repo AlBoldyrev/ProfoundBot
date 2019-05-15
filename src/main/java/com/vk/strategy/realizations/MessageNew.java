@@ -81,10 +81,6 @@ public class MessageNew implements IResponseHandler {
         ModelMessageNew message = gson.fromJson(jsonObject, ModelMessageNew.class);
         int userIdThatSendTheMessage = message.getObject().getUserId();
 
-        if (userIdThatSendTheMessage == ALEXANDER_BOLDYREV_VKID || userIdThatSendTheMessage == VASILII_KALITEEVSKY_VKID) {
-           adminTool.handleMessageNewAsAdmin(jsonObject);
-        }
-
         if (util.isAttachmentExists(jsonObject)) {
             actionIfAttachmentExist(jsonObject, userIdThatSendTheMessage);
         } else {
@@ -108,6 +104,10 @@ public class MessageNew implements IResponseHandler {
                     messageSender.sendMessageTextOnly(userIdThatSendTheMessage, "А информации-то вроде как и нет");
                 }
             } else {
+                if (userIdThatSendTheMessage == ALEXANDER_BOLDYREV_VKID || userIdThatSendTheMessage == VASILII_KALITEEVSKY_VKID) {
+                    adminTool.handleMessageNewAsAdmin(jsonObject);
+                    return;
+                }
                 messageSender.sendMessageTextOnly(userIdThatSendTheMessage, "Прости, меня не научили читать текст. Пришли картинку, пожалуйста!");
             }
         }

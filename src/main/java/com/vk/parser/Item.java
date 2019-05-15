@@ -23,6 +23,7 @@ public class Item {
     private View views;
     private Message message;
     private int unread;
+    private Conversation conversation;
 
     public int getId() {
         return id;
@@ -174,5 +175,13 @@ public class Item {
 
     public void setUnread(int unread) {
         this.unread = unread;
+    }
+
+    public Conversation getConversation() {
+        return conversation;
+    }
+
+    public void setConversation(Conversation conversation) {
+        this.conversation = conversation;
     }
 }
