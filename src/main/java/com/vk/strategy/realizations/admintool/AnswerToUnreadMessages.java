@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.GroupActor;
 import com.vk.api.sdk.exceptions.ApiException;
+import com.vk.api.sdk.exceptions.ApiMessagesDenySendException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.enums.MessagesFilter;
 import com.vk.parser.Item;
@@ -29,8 +30,7 @@ public class AnswerToUnreadMessages implements AdminToolResponseHandler  {
     Logger logger = LoggerFactory.getLogger(AnswerToUnreadMessages.class);
 
     private final Random random = new Random();
-    private final String MESSAGE_TO_USER = "привет) у меня был небольшой технический сбой, но админы меня уже поправили\n"+
-            "вроде как, я снова работаю) проверь &#128521;";
+    private final String MESSAGE_TO_USER = "Привет, я снова в деле &#128076;";
 
     public void handle() {
 
@@ -44,9 +44,13 @@ public class AnswerToUnreadMessages implements AdminToolResponseHandler  {
             List<Item> items = parser.getResponse().getItems();
             for (Item item: items) {
                 int userId = item.getConversation().getPeer().getId();
-                apiClient.messages().send(groupActor).message(MESSAGE_TO_USER).userId(userId).randomId(random.nextInt()).execute();
+                try {
+                    apiClient.messages().send(groupActor).message(MESSAGE_TO_USER).userId(userId).randomId(random.nextInt()).execute();
+                } catch (ApiMessagesDenySendException e) {
+                    logger.info("Can send message to user " + userId + " because he denied this action in his settings!");
+                }
             }
-        } catch (ClientException | ApiException e) {
+        } catch (ClientException | ApiException e ) {
             logger.error("Client or API Exception! " + e.getLocalizedMessage());
         }
     }

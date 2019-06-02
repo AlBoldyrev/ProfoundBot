@@ -95,7 +95,7 @@ class BotRequestHandler {
 
             }
             lastTimeStamp = eventsResponse.getTs();
-        } catch (LongPollServerKeyExpiredException e) {
+        } catch (LongPollServerKeyExpiredException | RuntimeException e) {
             try {
                 longPollServer = apiClient.groupsLongPoll().getLongPollServer(groupActor).execute();
             } catch (ApiException ex) {
@@ -110,4 +110,6 @@ class BotRequestHandler {
             log.error("CLIENT client when trying to get LONG POLL server response! " + e.getStackTrace());
         }
     }
+
+
 }
